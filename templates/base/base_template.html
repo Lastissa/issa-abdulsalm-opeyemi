@@ -1,56 +1,56 @@
 {% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>
-(function () {
-  try {
-    if (localStorage.getItem("theme") === "light") {
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-  } catch (e) {}
-})();
-</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+  (function () {
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  })();
+  </script>
 
-<title>{% block meta_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}</title>
-<meta name="description" content="{% block meta_description %}{{ site.default_description }}{% endblock %}">
-<meta name="keywords" content="{% block meta_keywords %}{{ site.default_keywords }}{% endblock %}">
-<meta name="author" content="{{ site.full_name }}">
-<meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="theme-color" content="#0a0e16">
-<link rel="canonical" href="{% block canonical_url %}{{ site.domain }}{{ request.path }}{% endblock %}">
+  <title>{% block meta_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ site.default_description }}{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}{{ site.default_keywords }}{% endblock %}">
+  <meta name="author" content="{{ site.full_name }}">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#0a0e16">
+  <link rel="canonical" href="{% block canonical_url %}{{ site.domain }}{{ request.path }}{% endblock %}">
 
-<meta property="og:type" content="{% block og_type %}website{% endblock %}">
-<meta property="og:site_name" content="{{ site.title }}">
-<meta property="og:title" content="{% block og_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
-<meta property="og:description" content="{% block og_description %}{{ site.default_description }}{% endblock %}">
-<meta property="og:image" content="{% block og_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
-<meta property="og:url" content="{{ site.domain }}{{ request.path }}">
-<meta property="og:locale" content="en_NG">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="{{ site.title }}">
+  <meta property="og:title" content="{% block og_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ site.default_description }}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
+  <meta property="og:url" content="{{ site.domain }}{{ request.path }}">
+  <meta property="og:locale" content="en_NG">
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{% block twitter_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
-<meta name="twitter:description" content="{% block twitter_description %}{{ site.default_description }}{% endblock %}">
-<meta name="twitter:image" content="{% block twitter_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}{{ site.default_description }}{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
 
-{% block structured_data %}{% endblock %}
+  {% block structured_data %}{% endblock %}
 
-{# Preconnect first so the font round-trip starts before CSS is parsed. #}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  {# Preconnect first so the font round-trip starts before CSS is parsed. #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-{# Critical CSS inlined for instant first paint of header + hero -- see workflow.md, decision C3. #}
-<style>{% include "base/critical.css" %}</style>
+  {# Critical CSS inlined for instant first paint of header + hero -- see workflow.md, decision C3. #}
+  <style>{% include "base/critical.css" %}</style>
 
-{# Full stylesheet loaded non-blocking: preload + swap-on-load, with a noscript fallback. #}
-<link rel="preload" href="{% static 'portfolio/css/styles.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="{% static 'portfolio/css/styles.css' %}"></noscript>
+  {# Full stylesheet loaded non-blocking: preload + swap-on-load, with a noscript fallback. #}
+  <link rel="preload" href="{% static 'portfolio/css/styles.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{% static 'portfolio/css/styles.css' %}"></noscript>
 
-<link rel="icon" type="image/png" href="{% static 'portfolio/images/favicon.png' %}">
+  <link rel="icon" type="image/png" href="{% static 'portfolio/images/favicon.png' %}">
 
-{% block extra_head %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>

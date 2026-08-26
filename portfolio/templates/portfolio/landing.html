@@ -1,6 +1,11 @@
 {% extends "base/base_template.html" %}
 {% load static %}
 
+{% block extra_head %}
+  <meta name="google-site-verification" content="FRAXW2Ne-3BvGRMsFPZzwbs3urs53898DDp0I5KFm5I" />
+{% endblock extra_head %}
+  
+
 {% block meta_description %}{{ site.full_name }} - {{ site.role_title }}. {{ site.tagline }}{% endblock %}
 
 {% block structured_data %}

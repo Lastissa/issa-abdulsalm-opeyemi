@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-idysu!216q=mto__y(bjr1wpd3_98$f4_6pu*grsvj)jvya-&3"   #   No need to change jare
 
-DEBUG = True
+DEBUG = not os.getenv("PRODUCTION", False)
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOST", "127.0.0.1,localhost").split(",")
 
