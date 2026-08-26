@@ -1,22 +1,35 @@
-/*
-  critical.css
-  Inlined directly into <head> (see templates/base/base_template.html).
-  Contains ONLY what's needed to paint the header/nav and hero correctly
-  on first frame, before styles.css finishes loading. Keep this file
-  small -- every byte here blocks the first paint. See workflow.md,
-  decision C3.
-*/
 :root {
-  --ink: #0b0f14;
-  --panel: #121821;
-  --paper: #e8edf2;
-  --muted: #8592a1;
-  --signal: #f5a623;
-  --line: #232b36;
+  --ink: #0a0e16;
+  --panel: #121826;
+  --paper: #eef1f8;
+  --muted: #8a93ab;
+  --signal: #07a87f;
+  --signal-2: #22d3ee;
+  --signal-gradient: linear-gradient(135deg, var(--signal) 0%, var(--signal-2) 60%);
+  --on-accent: #0a0e16;
+  --line: #232a3d;
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --container: 1100px;
+  --header-h: 84px;
+  color-scheme: dark;
+}
+
+/* Light theme: same tokens, different values. Toggled via a
+   data-theme attribute set on <html> by the inline anti-flicker
+   script in <head> (before first paint) and by main.js afterwards.
+   --on-accent stays fixed in both themes -- it's the text colour for
+   content sitting ON the bright accent gradient (buttons, skip
+   link), not the page background, so it must never flip. */
+:root[data-theme="light"] {
+  --signal:#2d07a8;
+  --ink: #f5f6fb;
+  --panel: #ffffff;
+  --paper: #14161f;
+  --muted: #5c6270;
+  --line: #dde1ea;
+  color-scheme: light;
 }
 
 * {
@@ -51,26 +64,151 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
+  min-height: var(--header-h);
+  padding: 0 24px;
 }
 
 .brand {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: 0.02em;
   text-decoration: none;
   color: var(--paper);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .brand-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--signal);
+  background: var(--signal-gradient);
   flex-shrink: 0;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--signal) 60%, transparent);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 38px;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--paper);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.theme-toggle svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.theme-toggle .icon-moon {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-toggle .icon-sun {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-toggle .icon-moon {
+  display: block;
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--paper);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.15s ease;
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+}
+
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  color: var(--paper);
+  border-bottom-color: var(--signal);
+}
+
+@media (max-width: 720px) {
+  .hero-eyebrow{
+    font-size:13px;
+  }
+  .header-inner {
+    position: relative;
+  }
+
+  .header-right {
+    gap: 40px;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10;
+    background: var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 24px 16px;
+    display: none;
+    z-index: 40;
+  }
+
+  .nav-links.is-open {
+    display: flex;
+  }
+
+  .nav-links a {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
 }
 
 .hero {
@@ -81,7 +219,7 @@ a {
 
 .hero-eyebrow {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 19px;
   color: var(--signal);
   margin: 0 0 16px;
 }

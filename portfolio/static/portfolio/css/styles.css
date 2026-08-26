@@ -8,11 +8,17 @@
 
 /* ---------- Base & tokens (extends critical.css tokens) ---------- */
 :root {
-  --panel-alt: #161d27;
-  --signal-dim: #c97f1b;
+  --panel-alt: #161d2e;
+  --signal-dim: #6552d6;
   --ok: #3ecf8e;
   --radius: 10px;
   --gap: 24px;
+}
+
+:root[data-theme="light"] {
+  --panel-alt: #eef0f6;
+  --signal-dim: #5b46e0;
+  --ok: #0f9d64;
 }
 
 h1, h2, h3, h4 {
@@ -50,8 +56,8 @@ p {
   position: absolute;
   left: -999px;
   top: auto;
-  background: var(--signal);
-  color: var(--ink);
+  background: var(--signal-gradient);
+  color: var(--on-accent);
   padding: 10px 16px;
   z-index: 100;
   font-family: var(--font-mono);
@@ -73,45 +79,9 @@ button:focus-visible,
   border-radius: 4px;
 }
 
-/* ---------- Header / nav ---------- */
+/* ---------- Header / nav (brand text weight only -- layout lives in critical.css) ---------- */
 .brand strong {
   font-weight: 500;
-}
-
-.nav-links {
-  display: flex;
-  gap: 28px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-mono);
-  font-size: 14px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: var(--muted);
-  transition: color 0.15s ease;
-  padding: 4px 0;
-  border-bottom: 1px solid transparent;
-}
-
-.nav-links a:hover,
-.nav-links a[aria-current="page"] {
-  color: var(--paper);
-  border-bottom-color: var(--signal);
-}
-
-.nav-toggle {
-  display: none;
-  background: none;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--paper);
-  padding: 8px 10px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  cursor: pointer;
 }
 
 /* ---------- Hero ---------- */
@@ -125,6 +95,32 @@ button:focus-visible,
 .hero-copy {
   padding: 0;
   max-width: none;
+}
+
+.hero-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.hero-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  padding: 2px;
+  background: var(--signal-gradient);
+}
+
+.hero-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 2px solid var(--ink);
 }
 
 .hero p.lead {
@@ -160,15 +156,15 @@ button:focus-visible,
 }
 
 .btn-primary {
-  background: var(--signal);
-  border-color: var(--signal);
-  color: var(--ink);
+  background: var(--signal-gradient);
+  border-color: transparent;
+  color: var(--on-accent);
   font-weight: 500;
 }
 
 .btn-primary:hover {
-  background: var(--signal-dim);
-  border-color: var(--signal-dim);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--signal) 35%, transparent);
 }
 
 /* ---------- Signal pipeline (signature motif) ---------- */
@@ -340,6 +336,80 @@ section {
   border-bottom-color: var(--signal);
 }
 
+/* ---------- Project live preview (iframe) ---------- */
+.project-preview {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel-alt);
+  margin-top: 4px;
+}
+
+.project-preview iframe {
+  width: 100%;
+  height: 220px;
+  border: none;
+  display: block;
+  background: var(--panel-alt);
+}
+
+.project-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.project-preview-bar .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.project-preview-unavailable {
+  padding: 24px 16px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+/* ---------- Landing: featured project teasers ---------- */
+.project-card-compact {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-card-compact .project-card-top {
+  margin-bottom: 0;
+}
+
+.project-card-compact a.project-review-link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--signal);
+  text-decoration: none;
+  margin-top: auto;
+  padding-top: 6px;
+  border-bottom: 1px solid transparent;
+}
+
+.project-card-compact a.project-review-link:hover {
+  border-bottom-color: var(--signal);
+}
+
 /* ---------- CV page ---------- */
 .cv-actions {
   display: flex;
@@ -392,7 +462,8 @@ section {
 
 .footer-links {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 14px 18px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -419,39 +490,23 @@ section {
 }
 
 @media (max-width: 720px) {
-  .nav-toggle {
-    display: inline-flex;
-  }
-
-  .nav-links {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    gap: 0;
-    background: var(--ink);
-    border-bottom: 1px solid var(--line);
-    padding: 8px 24px 16px;
-    display: none;
-  }
-
-  .nav-links.is-open {
-    display: flex;
-  }
-
-  .nav-links a {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .header-inner {
-    position: relative;
-  }
-
   .timeline-item {
     flex-direction: column;
     gap: 4px;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    width: 100%;
+    gap: 12px 16px;
+  }
+
+  .project-preview iframe {
+    height: 180px;
   }
 }
 

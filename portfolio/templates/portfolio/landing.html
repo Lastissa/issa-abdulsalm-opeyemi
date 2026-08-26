@@ -12,8 +12,9 @@
   "url": "{{ site.domain }}/",
   "jobTitle": "{{ site.role_title }}",
   "description": "{{ site.default_description|escapejs }}",
-  "knowsAbout": ["Python", "Django", "Django REST Framework","PostgreSQL", "SQL", "Flutter", "Go", "Redis", "Celery"],
-  {% if site.socials.github %}"sameAs": ["{{ site.socials.github }}"],{% endif %}
+  "image": "{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}",
+  "knowsAbout": ["Python", "Django", "Django REST Framework","PostgreSQL", "SQL", "Flutter", "Go Lang", "Redis", "Celery"],
+  "sameAs": [{% if site.socials.github %}"{{ site.socials.github }}"{% endif %}{% if site.socials.linkedin %}{% if site.socials.github %},{% endif %}"{{ site.socials.linkedin }}"{% endif %}{% if site.socials.twitter %}{% if site.socials.github or site.socials.linkedin %},{% endif %}"{{ site.socials.twitter }}"{% endif %}],
   "alumniOf": {
     "@type": "CollegeOrUniversity",
     "name": "Federal University of Ilorin"
@@ -25,7 +26,12 @@
 {% block content %}
 <section class="hero" style="border-top: none; padding-top: 56px;">
   <div class="hero-copy">
-    <p class="hero-eyebrow">Backend developer &middot; Django &middot; DRF &middot; moving toward Go</p>
+    <div class="hero-identity">
+      <div class="hero-avatar">
+        <img src="{% static 'portfolio/images/profile.jpg' %}" alt="Photo of {{ site.full_name }}" width="64" height="64" loading="eager">
+      </div>
+      <p class="hero-eyebrow" style="margin: 0;">Backend developer &middot; Django + DRF &middot; moving toward Go Lang For concurrency</p>
+    </div>
     <h1>{{ site.full_name }}</h1>
     <p class="lead">{{ site.tagline }}</p>
     <div class="hero-actions">
@@ -39,26 +45,30 @@
     <svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of a request flowing from client through Django REST Framework to a database and back">
       <defs>
         <path id="pipe-path" d="M40,110 C120,30 160,30 230,110 C300,190 340,190 420,110" fill="none"/>
+        <linearGradient id="pipe-gradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#7C6CF6"/>
+          <stop offset="100%" stop-color="#22D3EE"/>
+        </linearGradient>
       </defs>
-      <use href="#pipe-path" stroke="#232B36" stroke-width="2" fill="none"/>
-      <use href="#pipe-path" stroke="#F5A623" stroke-width="2" fill="none" class="pipeline-dash"/>
-      <circle r="5" fill="#F5A623" class="pipeline-pulse" style="offset-path: path('M40,110 C120,30 160,30 230,110 C300,190 340,190 420,110');"/>
+      <use href="#pipe-path" stroke="#232A3D" stroke-width="2" fill="none"/>
+      <use href="#pipe-path" stroke="url(#pipe-gradient)" stroke-width="2" fill="none" class="pipeline-dash"/>
+      <circle r="5" fill="url(#pipe-gradient)" class="pipeline-pulse" style="offset-path: path('M40,110 C120,30 160,30 230,110 C300,190 340,190 420,110');"/>
 
       <g>
-        <rect x="16" y="90" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
-        <text x="52" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#E8EDF2">Client</text>
+        <rect x="16" y="90" width="72" height="40" rx="6" fill="#121826" stroke="#232A3D"/>
+        <text x="52" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#EEF1F8">Client</text>
       </g>
       <g>
-        <rect x="194" y="10" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
-        <text x="230" y="34" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#E8EDF2">Tools</text>
+        <rect x="194" y="10" width="72" height="40" rx="6" fill="#121826" stroke="#232A3D"/>
+        <text x="230" y="34" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#EEF1F8">Tools</text>
       </g>
       <g>
-        <rect x="194" y="170" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
-        <text x="230" y="194" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#E8EDF2">Security & Scalability</text>
+        <rect x="194" y="170" width="72" height="40" rx="6" fill="#121826" stroke="#232A3D"/>
+        <text x="230" y="194" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#EEF1F8">Security & Scalability</text>
       </g>
       <g>
-        <rect x="372" y="90" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
-        <text x="408" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#E8EDF2">Job Done</text>
+        <rect x="372" y="90" width="72" height="40" rx="6" fill="#121826" stroke="#232A3D"/>
+        <text x="408" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#EEF1F8">Job Done</text>
       </g>
     </svg>
     <p class="pipeline-caption">request &rarr; Security &rarr; Logic &rarr; response</p>
@@ -68,13 +78,11 @@
 <section aria-labelledby="about-heading">
   <p class="section-eyebrow">About</p>
   <h2 id="about-heading">How I build</h2>
-  <p>{{ site.tagline }}</p>
+  <p>Research First as a product without findings is a product waiting to fail, choose the right tool to use hence why i am widening my skill set every single day, Go far while also going deep</p>
   <p class="muted">
-    Most of what I ship runs on Django and Django REST Framework, backed by SQL. and/or PostgreSQL
-    On the mobile side I build with Flutter, usually talking to a DRF backend
-    I've written myself. I'm not static about the stack, either. I'm currently
-    picking up Go specifically for the concurrency Django can't natively give
-    me, and to get real experience with a compiled language on the backend.
+    Most of what I ship currently runs on Django with DRF because they are heavily data suportive and secured, backed by Postgress(choosen due to its flexibillity compared to SQL). 
+    Flutter Proficient(Build Cross platfrom mobile and desktop app all from the same codebase).Go GIn Framework next due to its high speed and concurrency power.
+    So help me God.
   </p>
 </section>
 
@@ -110,7 +118,24 @@
 <section aria-labelledby="work-heading">
   <p class="section-eyebrow">Selected work</p>
   <h2 id="work-heading">Recent projects</h2>
-  <p class="muted">A quick look -- full write-ups, stack, and links live on the <a href="{% url 'portfolio:projects' %}">project reviews page</a>.</p>
-  <a class="btn btn-primary" style="margin-top: 16px;" href="{% url 'portfolio:projects' %}">See all project reviews</a>
+  <p class="muted">A quick look -- full write-ups, live previews, stack, and links live on the <a href="{% url 'portfolio:projects' %}">project reviews page</a>.</p>
+
+  <div class="project-grid" style="margin-top: 24px;">
+    {% for project in featured_projects %}
+    <article class="project-card-compact">
+      <div class="project-card-top">
+        <h3>{{ project.name }}</h3>
+        <span class="status-pill">{{ project.status }}</span>
+      </div>
+      <p class="muted">{{ project.summary }}</p>
+      <ul class="tag-list">
+        {% for tech in project.stack|slice:":3" %}<li class="tag">{{ tech }}</li>{% endfor %}
+      </ul>
+      <a class="project-review-link" href="{% url 'portfolio:projects' %}#{{ project.slug }}">Full review &rarr;</a>
+    </article>
+    {% endfor %}
+  </div>
+
+  <a class="btn btn-primary" style="margin-top: 24px;" href="{% url 'portfolio:projects' %}">See all project reviews</a>
 </section>
 {% endblock %}

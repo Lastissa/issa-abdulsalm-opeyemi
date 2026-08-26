@@ -109,4 +109,4 @@ MAILERS = {
     },
 }
 
-FULL_DOMAIN  = os.getenv('FULL_PATH')
+FULL_DOMAIN  = os.getenv('FULL_DOMAIN', 'http://localhost:8000')

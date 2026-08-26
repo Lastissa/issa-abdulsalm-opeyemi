@@ -22,7 +22,8 @@ CV_DIR = Path(settings.BASE_DIR) / "portfolio" / "static" / "portfolio" / "files
 
 def landing(request):
     """Landing page: about, education, skills, entry point to CV & projects."""
-    return render(request, "portfolio/landing.html")
+    featured = [p for p in PROJECTS if p.get("featured")] or PROJECTS[:3]
+    return render(request, "portfolio/landing.html", {"featured_projects": featured})
 
 
 def projects(request):

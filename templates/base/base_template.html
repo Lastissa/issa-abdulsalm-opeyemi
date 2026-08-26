@@ -3,24 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function () {
+  try {
+    if (localStorage.getItem("theme") === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  } catch (e) {}
+})();
+</script>
 
 <title>{% block meta_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}</title>
 <meta name="description" content="{% block meta_description %}{{ site.default_description }}{% endblock %}">
 <meta name="keywords" content="{% block meta_keywords %}{{ site.default_keywords }}{% endblock %}">
 <meta name="author" content="{{ site.full_name }}">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0a0e16">
 <link rel="canonical" href="{% block canonical_url %}{{ site.domain }}{{ request.path }}{% endblock %}">
 
 <meta property="og:type" content="{% block og_type %}website{% endblock %}">
 <meta property="og:site_name" content="{{ site.title }}">
 <meta property="og:title" content="{% block og_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
 <meta property="og:description" content="{% block og_description %}{{ site.default_description }}{% endblock %}">
+<meta property="og:image" content="{% block og_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
 <meta property="og:url" content="{{ site.domain }}{{ request.path }}">
 <meta property="og:locale" content="en_NG">
 
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{% block twitter_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
 <meta name="twitter:description" content="{% block twitter_description %}{{ site.default_description }}{% endblock %}">
+<meta name="twitter:image" content="{% block twitter_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
 
 {% block structured_data %}{% endblock %}
 
@@ -49,14 +61,22 @@
       <span class="brand-dot" aria-hidden="true"></span>
       <strong>{{ site.short_name }}</strong>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
-    <nav id="primary-nav" aria-label="Primary">
-      <ul class="nav-links">
-        <li><a href="{% url 'portfolio:landing' %}" {% if request.resolver_match.url_name == 'landing' %}aria-current="page"{% endif %}>Home</a></li>
-        <li><a href="{% url 'portfolio:projects' %}" {% if request.resolver_match.url_name == 'projects' %}aria-current="page"{% endif %}>Projects</a></li>
-        <li><a href="{% url 'portfolio:cv' %}" {% if request.resolver_match.url_name == 'cv' %}aria-current="page"{% endif %}>CV</a></li>
-      </ul>
-    </nav>
+    <div class="header-right">
+      <nav id="primary-nav" aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="{% url 'portfolio:landing' %}" {% if request.resolver_match.url_name == 'landing' %}aria-current="page"{% endif %}>Home</a></li>
+          <li><a href="{% url 'portfolio:projects' %}" {% if request.resolver_match.url_name == 'projects' %}aria-current="page"{% endif %}>Projects</a></li>
+          <li><a href="{% url 'portfolio:cv' %}" {% if request.resolver_match.url_name == 'cv' %}aria-current="page"{% endif %}>CV</a></li>
+        </ul>
+      </nav>
+      <div class="header-controls">
+        <button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+        </button>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -66,7 +86,7 @@
 
 <footer class="site-footer">
   <div class="footer-inner container">
-    <p>&copy; {% now "Y" %} {{ site.full_name }}. Built with Django.</p>
+    <p>&copy; {% now "Y" %} {{ site.full_name }}.</p>
     <ul class="footer-links">
       {% if site.socials.email %}<li><a href="mailto:{{ site.socials.email }}">Email</a></li>{% endif %}
       {% if site.socials.github %}<li><a href="{{ site.socials.github }}" target="_blank" rel="noopener noreferrer">GitHub</a></li>{% endif %}

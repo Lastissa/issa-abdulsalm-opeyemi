@@ -8,9 +8,9 @@ SITE_TITLE = "Issa Abdulsalam Opeyemi"
 ROLE_TITLE = "Backend Developer working towards Software Development"
 
 TAGLINE = (
-    "Driven to building maintainable systems instead of chasing interfaces. "
-    "Working with logic is my core -- I pick up UI when the need comes, "
-    "but it isn't where I live."
+    "Driven to building maintainable systems."
+    "Working with logic is my core in addition, i can pick up UI when the need comes, "
+    ""
 )
 
 # --- Canonical domain -----------------------------------------------------
@@ -40,8 +40,7 @@ DEFAULT_META_KEYWORDS = [
 ]
 
 # --- Social / contact links ----------------------------------------------
-# Hard-code your real links here. Leave as empty string "" to hide a
-# link from the UI (templates check truthiness before rendering).
+
 SOCIAL_LINKS = {
     "email": "lastissa11@gmail.com",
     "github": "https://github.com/Lastissa",
@@ -72,7 +71,6 @@ SKILLS = {
 }
 
 # --- CV files ---------------------------------------------------------------
-# Filenames the CV view/download expect to find in
-# portfolio/static/portfolio/files/. Update here if you rename the file.
+
 CV_FILENAME = "issa-abdulsalam-opeyemi-cv.pdf"
 CV_DISPLAY_NAME = "Issa Abdulsalam Opeyemi - CV.pdf"

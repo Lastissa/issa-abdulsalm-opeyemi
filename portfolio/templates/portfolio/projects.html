@@ -49,6 +49,16 @@
       </div>
       <p class="muted">{{ project.summary }}</p>
       <p>{{ project.description }}</p>
+
+      {% if project.embeddable %}
+      <div class="project-preview">
+        <p class="project-preview-bar"><span class="dot" aria-hidden="true"></span>{{ project.live_url }}</p>
+        <iframe src="{{ project.live_url }}" title="Live preview of {{ project.name }}" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      </div>
+      {% elif project.live_url %}
+      <p class="project-preview-unavailable">No inline preview for this one -- it's a download, not a web page. Use the link below.</p>
+      {% endif %}
+
       <ul class="tag-list">
         {% for tech in project.stack %}<li class="tag">{{ tech }}</li>{% endfor %}
       </ul>
