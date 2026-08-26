@@ -1,0 +1,63 @@
+{% extends "base/base_template.html" %}
+
+{% block meta_title %}Projects | {{ site.title }}{% endblock %}
+{% block meta_description %}Full project reviews by {{ site.full_name }}, a backend developer working with Django, Django REST Framework, Flutter, and Go -- with repo links, live demos, and the stack used for each build.{% endblock %}
+{% block meta_keywords %}{{ site.default_keywords }}, Django projects, DRF projects, Flutter projects{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for project in projects %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "item": {
+        "@type": "SoftwareSourceCode",
+        "name": "{{ project.name|escapejs }}",
+        "description": "{{ project.summary|escapejs }}",
+        "codeRepository": "{{ project.repo_url }}",
+        "programmingLanguage": "{{ project.stack.0 }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section style="border-top: none; padding-bottom: 24px;">
+  <p class="section-eyebrow">Project reviews</p>
+  <h1>Things I've built</h1>
+  <p class="lead muted">
+    Every project below is real and shipped by me, with the stack I used
+    and where to see it. Status is honest -- if something's still in
+    progress or a feature is down, it says so.
+  </p>
+</section>
+
+<section style="border-top: none; padding-top: 0;">
+  <div class="project-grid">
+    {% for project in projects %}
+    <article class="project-card" id="{{ project.slug }}">
+      <div class="project-card-top">
+        <h3>{{ project.name }}</h3>
+        <span class="status-pill">{{ project.status }}</span>
+      </div>
+      <p class="muted">{{ project.summary }}</p>
+      <p>{{ project.description }}</p>
+      <ul class="tag-list">
+        {% for tech in project.stack %}<li class="tag">{{ tech }}</li>{% endfor %}
+      </ul>
+      <div class="project-links">
+        {% if project.repo_url %}<a href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer">Source code &rarr;</a>{% endif %}
+        {% if project.live_url %}<a href="{{ project.live_url }}" target="_blank" rel="noopener noreferrer">{{ project.live_label }} &rarr;</a>{% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

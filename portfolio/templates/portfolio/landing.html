@@ -1,0 +1,116 @@
+{% extends "base/base_template.html" %}
+{% load static %}
+
+{% block meta_description %}{{ site.full_name }} - {{ site.role_title }}. {{ site.tagline }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "{{ site.full_name }}",
+  "url": "{{ site.domain }}/",
+  "jobTitle": "{{ site.role_title }}",
+  "description": "{{ site.default_description|escapejs }}",
+  "knowsAbout": ["Python", "Django", "Django REST Framework","PostgreSQL", "SQL", "Flutter", "Go", "Redis", "Celery"],
+  {% if site.socials.github %}"sameAs": ["{{ site.socials.github }}"],{% endif %}
+  "alumniOf": {
+    "@type": "CollegeOrUniversity",
+    "name": "Federal University of Ilorin"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="hero" style="border-top: none; padding-top: 56px;">
+  <div class="hero-copy">
+    <p class="hero-eyebrow">Backend developer &middot; Django &middot; DRF &middot; moving toward Go</p>
+    <h1>{{ site.full_name }}</h1>
+    <p class="lead">{{ site.tagline }}</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">View project reviews</a>
+      <a class="btn" href="{% url 'portfolio:cv' %}">View CV</a>
+      <a class="btn" href="{% url 'portfolio:cv_download' %}">Download CV</a>
+    </div>
+  </div>
+
+  <div class="pipeline-wrap" aria-hidden="true">
+    <svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of a request flowing from client through Django REST Framework to a database and back">
+      <defs>
+        <path id="pipe-path" d="M40,110 C120,30 160,30 230,110 C300,190 340,190 420,110" fill="none"/>
+      </defs>
+      <use href="#pipe-path" stroke="#232B36" stroke-width="2" fill="none"/>
+      <use href="#pipe-path" stroke="#F5A623" stroke-width="2" fill="none" class="pipeline-dash"/>
+      <circle r="5" fill="#F5A623" class="pipeline-pulse" style="offset-path: path('M40,110 C120,30 160,30 230,110 C300,190 340,190 420,110');"/>
+
+      <g>
+        <rect x="16" y="90" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
+        <text x="52" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#E8EDF2">Client</text>
+      </g>
+      <g>
+        <rect x="194" y="10" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
+        <text x="230" y="34" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#E8EDF2">Tools</text>
+      </g>
+      <g>
+        <rect x="194" y="170" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
+        <text x="230" y="194" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#E8EDF2">Security & Scalability</text>
+      </g>
+      <g>
+        <rect x="372" y="90" width="72" height="40" rx="6" fill="#121821" stroke="#232B36"/>
+        <text x="408" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#E8EDF2">Job Done</text>
+      </g>
+    </svg>
+    <p class="pipeline-caption">request &rarr; Security &rarr; Logic &rarr; response</p>
+  </div>
+</section>
+
+<section aria-labelledby="about-heading">
+  <p class="section-eyebrow">About</p>
+  <h2 id="about-heading">How I build</h2>
+  <p>{{ site.tagline }}</p>
+  <p class="muted">
+    Most of what I ship runs on Django and Django REST Framework, backed by SQL. and/or PostgreSQL
+    On the mobile side I build with Flutter, usually talking to a DRF backend
+    I've written myself. I'm not static about the stack, either. I'm currently
+    picking up Go specifically for the concurrency Django can't natively give
+    me, and to get real experience with a compiled language on the backend.
+  </p>
+</section>
+
+<section aria-labelledby="education-heading">
+  <p class="section-eyebrow">Education</p>
+  <h2 id="education-heading">Education</h2>
+  {% for edu in site.education %}
+  <div class="timeline-item">
+    <span class="timeline-period">{{ edu.period }}</span>
+    <div>
+      <h3>{{ edu.credential }}</h3>
+      <p class="muted">{{ edu.institution }} &middot; {{ edu.status }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+<section aria-labelledby="skills-heading">
+  <p class="section-eyebrow">Skills</p>
+  <h2 id="skills-heading">What I work with</h2>
+  <div class="skills-grid">
+    {% for group, items in site.skills.items %}
+    <div class="skill-group">
+      <h3>{{ group }}</h3>
+      <ul class="tag-list">
+        {% for item in items %}<li class="tag">{{ item }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section aria-labelledby="work-heading">
+  <p class="section-eyebrow">Selected work</p>
+  <h2 id="work-heading">Recent projects</h2>
+  <p class="muted">A quick look -- full write-ups, stack, and links live on the <a href="{% url 'portfolio:projects' %}">project reviews page</a>.</p>
+  <a class="btn btn-primary" style="margin-top: 16px;" href="{% url 'portfolio:projects' %}">See all project reviews</a>
+</section>
+{% endblock %}

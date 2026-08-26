@@ -1,0 +1,464 @@
+/*
+  styles.css
+  Everything NOT required for first paint. critical.css (inlined in
+  <head>) already covers header/nav/hero base styles so there's no
+  flash-of-unstyled-content on the above-the-fold content; this file
+  fills in the rest.
+*/
+
+/* ---------- Base & tokens (extends critical.css tokens) ---------- */
+:root {
+  --panel-alt: #161d27;
+  --signal-dim: #c97f1b;
+  --ok: #3ecf8e;
+  --radius: 10px;
+  --gap: 24px;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--paper);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin: 0 0 8px;
+}
+
+h3 {
+  font-size: 1.15rem;
+  margin: 0 0 6px;
+}
+
+p {
+  color: var(--paper);
+  margin: 0 0 1rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  background: var(--signal);
+  color: var(--ink);
+  padding: 10px 16px;
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+  top: 0;
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- Header / nav ---------- */
+.brand strong {
+  font-weight: 500;
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.15s ease;
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+}
+
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  color: var(--paper);
+  border-bottom-color: var(--signal);
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--paper);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.hero-copy {
+  padding: 0;
+  max-width: none;
+}
+
+.hero p.lead {
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  padding: 11px 18px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--paper);
+  transition: border-color 0.15s ease, transform 0.1s ease, background 0.15s ease;
+}
+
+.btn:hover {
+  border-color: var(--muted);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: var(--signal-dim);
+  border-color: var(--signal-dim);
+}
+
+/* ---------- Signal pipeline (signature motif) ---------- */
+.pipeline-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 20px;
+}
+
+.pipeline-caption {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.pipeline-dash {
+  stroke-dasharray: 6 6;
+  animation: dash-move 3.2s linear infinite;
+}
+
+.pipeline-pulse {
+  animation: pulse-move 3.2s linear infinite;
+}
+
+@keyframes dash-move {
+  to { stroke-dashoffset: -120; }
+}
+
+@keyframes pulse-move {
+  0% { offset-distance: 0%; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+/* ---------- Sections ---------- */
+section {
+  padding: 56px 0;
+  border-top: 1px solid var(--line);
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--signal);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 10px;
+}
+
+/* ---------- Skills ---------- */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gap);
+  margin-top: 24px;
+}
+
+.skill-group {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: var(--panel);
+}
+
+.skill-group h3 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 5px 10px;
+  background: var(--panel-alt);
+}
+
+/* ---------- Education / timeline ---------- */
+.timeline-item {
+  display: flex;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+
+.timeline-item:first-child {
+  border-top: none;
+}
+
+.timeline-period {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--signal);
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+/* ---------- Project cards (shared: landing preview + projects page) ---------- */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--gap);
+  margin-top: 24px;
+}
+
+.project-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.status-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ok);
+  border: 1px solid var(--ok);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.project-links {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.project-links a {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--signal);
+  border-bottom: 1px solid transparent;
+}
+
+.project-links a:hover {
+  border-bottom-color: var(--signal);
+}
+
+/* ---------- CV page ---------- */
+.cv-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0 28px;
+}
+
+.cv-embed-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.cv-embed-wrap iframe {
+  width: 100%;
+  height: 80vh;
+  min-height: 480px;
+  border: none;
+  display: block;
+}
+
+.cv-fallback {
+  padding: 40px 24px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 32px 0;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.footer-links a:hover {
+  color: var(--paper);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-wrap {
+    order: -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 24px 16px;
+    display: none;
+  }
+
+  .nav-links.is-open {
+    display: flex;
+  }
+
+  .nav-links a {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .header-inner {
+    position: relative;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-dash,
+  .pipeline-pulse {
+    animation: none;
+  }
+}

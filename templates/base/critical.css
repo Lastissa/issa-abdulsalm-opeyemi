@@ -1,0 +1,96 @@
+/*
+  critical.css
+  Inlined directly into <head> (see templates/base/base_template.html).
+  Contains ONLY what's needed to paint the header/nav and hero correctly
+  on first frame, before styles.css finishes loading. Keep this file
+  small -- every byte here blocks the first paint. See workflow.md,
+  decision C3.
+*/
+:root {
+  --ink: #0b0f14;
+  --panel: #121821;
+  --paper: #e8edf2;
+  --muted: #8592a1;
+  --signal: #f5a623;
+  --line: #232b36;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --container: 1100px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink);
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--ink);
+}
+
+.header-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+}
+
+.brand {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--signal);
+  flex-shrink: 0;
+}
+
+.hero {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 64px 24px 40px;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--signal);
+  margin: 0 0 16px;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  margin: 0 0 18px;
+  color: var(--paper);
+}

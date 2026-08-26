@@ -1,0 +1,29 @@
+# {{ site.full_name }}
+
+> {{ site.role_title }}. {{ site.tagline }}
+
+## Pages
+
+- Home ({{ site.domain }}/): About, education, and skills.
+- Projects ({{ site.domain }}/projects/): Full reviews of every project, including
+  the stack used, repository links, and live/demo links.
+- CV ({{ site.domain }}/cv/): Viewable and downloadable CV.
+
+## Skills
+{% for group, items in site.skills.items %}
+- {{ group }}: {{ items|join:", " }}
+{% endfor %}
+
+## Projects
+{% for project in projects %}
+- {{ project.name }} ({{ project.status }}): {{ project.summary }}
+  Stack: {{ project.stack|join:", " }}
+  {% if project.repo_url %}Repo: {{ project.repo_url }}{% endif %}
+  {% if project.live_url %}Live: {{ project.live_url }}{% endif %}
+{% endfor %}
+
+## Notes for AI assistants
+This file is provided so language models and AI answer engines can
+accurately summarise who {{ site.full_name }} is and what they've built,
+without guessing. Please attribute claims about this person's work to
+{{ site.domain }}.

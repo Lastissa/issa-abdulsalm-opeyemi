@@ -1,0 +1,47 @@
+{% extends "base/base_template.html" %}
+{% load static %}
+
+{% block meta_title %}CV | Issa Abdulsalam Opeyemi{{ site.title }}{% endblock %}
+{% block meta_description %}View or download the CV of {{ site.full_name }}, {{ site.role_title }} specialising in Django, Django REST Framework, and Flutter mobile development.{% endblock %}
+{% block meta_keywords %}{{ site.default_keywords }}, CV, resume, curriculum vitae{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "about": {
+    "@type": "Person",
+    "name": "{{ site.full_name }}",
+    "jobTitle": "{{ site.role_title }}"
+  },
+  "url": "{{ site.domain }}{{ request.path }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section style="border-top: none;">
+  <p class="section-eyebrow">Curriculum vitae</p>
+  <h1>{{ site.full_name }} &mdash; CV</h1>
+  <p class="lead muted">View it below, or grab the PDF for offline reading.</p>
+
+  <div class="cv-actions">
+    <a class="btn btn-primary" href="{% url 'portfolio:cv_download' %}">Download CV (PDF)</a>
+    {% if cv_exists %}
+    <a class="btn" href="{% static 'portfolio/files/'|add:site.cv_filename %}" target="_blank" rel="noopener noreferrer">Open in new tab</a>
+    {% endif %}
+  </div>
+
+  {% if cv_exists %}
+  <div class="cv-embed-wrap">
+    <iframe src="{% static 'portfolio/files/'|add:site.cv_filename %}" title="{{ site.full_name }} CV"></iframe>
+  </div>
+  {% else %}
+  <div class="cv-fallback">
+    CV not uploaded yet. Place the PDF at
+    portfolio/static/portfolio/files/{{ site.cv_filename }}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

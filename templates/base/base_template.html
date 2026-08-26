@@ -1,0 +1,83 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>{% block meta_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}{{ site.default_description }}{% endblock %}">
+<meta name="keywords" content="{% block meta_keywords %}{{ site.default_keywords }}{% endblock %}">
+<meta name="author" content="{{ site.full_name }}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="{% block canonical_url %}{{ site.domain }}{{ request.path }}{% endblock %}">
+
+<meta property="og:type" content="{% block og_type %}website{% endblock %}">
+<meta property="og:site_name" content="{{ site.title }}">
+<meta property="og:title" content="{% block og_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}{{ site.default_description }}{% endblock %}">
+<meta property="og:url" content="{{ site.domain }}{{ request.path }}">
+<meta property="og:locale" content="en_NG">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{% block twitter_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
+<meta name="twitter:description" content="{% block twitter_description %}{{ site.default_description }}{% endblock %}">
+
+{% block structured_data %}{% endblock %}
+
+{# Preconnect first so the font round-trip starts before CSS is parsed. #}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+{# Critical CSS inlined for instant first paint of header + hero -- see workflow.md, decision C3. #}
+<style>{% include "base/critical.css" %}</style>
+
+{# Full stylesheet loaded non-blocking: preload + swap-on-load, with a noscript fallback. #}
+<link rel="preload" href="{% static 'portfolio/css/styles.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{% static 'portfolio/css/styles.css' %}"></noscript>
+
+<link rel="icon" type="image/png" href="{% static 'portfolio/images/favicon.png' %}">
+
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner container">
+    <a class="brand" href="{% url 'portfolio:landing' %}">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <strong>{{ site.short_name }}</strong>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <nav id="primary-nav" aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="{% url 'portfolio:landing' %}" {% if request.resolver_match.url_name == 'landing' %}aria-current="page"{% endif %}>Home</a></li>
+        <li><a href="{% url 'portfolio:projects' %}" {% if request.resolver_match.url_name == 'projects' %}aria-current="page"{% endif %}>Projects</a></li>
+        <li><a href="{% url 'portfolio:cv' %}" {% if request.resolver_match.url_name == 'cv' %}aria-current="page"{% endif %}>CV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner container">
+    <p>&copy; {% now "Y" %} {{ site.full_name }}. Built with Django.</p>
+    <ul class="footer-links">
+      {% if site.socials.email %}<li><a href="mailto:{{ site.socials.email }}">Email</a></li>{% endif %}
+      {% if site.socials.github %}<li><a href="{{ site.socials.github }}" target="_blank" rel="noopener noreferrer">GitHub</a></li>{% endif %}
+      {% if site.socials.linkedin %}<li><a href="{{ site.socials.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>{% endif %}
+      {% if site.socials.twitter %}<li><a href="{{ site.socials.twitter }}" target="_blank" rel="noopener noreferrer">X / Twitter</a></li>{% endif %}
+      {% if site.socials.whatsapp %}<li><a href="{{ site.socials.whatsapp }}" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>{% endif %}
+    </ul>
+  </div>
+</footer>
+
+<script src="{% static 'portfolio/js/main.js' %}" defer></script>
+{% block extra_body %}{% endblock %}
+</body>
+</html>
