@@ -10,7 +10,7 @@ SECRET_KEY = "django-insecure-idysu!216q=mto__y(bjr1wpd3_98$f4_6pu*grsvj)jvya-&3
 
 DEBUG = not os.getenv("PRODUCTION", False)
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOST", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOST", "127.0.0.1,localhost,esta-sensate-unquickly.ngrok-free.dev").split(",")
 
 
 # Application definition

@@ -1,5 +1,26 @@
 PROJECTS = [
     {
+    "slug": "abureport.com.ng",
+    "name": "Abureport",
+    "status": "Live",
+    "summary": (
+        "Fully functional fullstack web application"
+        "serving as a news report channel"
+        "featuring dynamic content depending or which role is accesing it."
+    ),
+    "description": (
+        "A news platform with several pages all well verified againts failure "
+        "driven by heavy data yet handled efficiently with proper caching and avoiding stale data with cache invalidation."
+        "Built to be self depenedent as tons of edit can be made without code rewriting"
+
+    ),
+    "stack": ["Django", "HTML", "CSS", "JavaScript", "Auth & Permissions" 'Postgress'],
+    "live_url": "https://abureport.com.ng",
+    "live_label": "Live demo",
+    "embeddable": True,
+    "featured": True,
+    },
+    {
         "slug": "discipline-and-streak",
         "name": "Discipline & Streak",
         "status": "Live",
