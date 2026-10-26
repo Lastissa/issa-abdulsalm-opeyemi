@@ -1,0 +1,76 @@
+{% extends "portfolio/custom_admin/base_admin.html" %}
+{% load humanize %}
+
+{% block admin_title %}Feed posts{% endblock %}
+
+{% block admin_actions %}
+<a class="btn btn-small btn-primary" href="{% url 'portfolio:feed' %}#composer">New post</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-head">
+  <div>
+    <h2>Feed posts</h2>
+    <p>{{ total|intcomma }} post{{ total|pluralize }}. Edit or delete any entry; the public feed updates immediately.</p>
+  </div>
+</div>
+
+<section class="panel" aria-labelledby="posts-table-heading">
+  <div class="panel-head">
+    <div class="panel-title" id="posts-table-heading">All posts</div>
+    <a class="panel-subtitle" href="{% url 'portfolio:feed' %}">View public feed &rarr;</a>
+  </div>
+  <div class="panel-body panel-body-flush">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Post</th>
+            <th scope="col">Status</th>
+            <th scope="col">Published</th>
+            <th scope="col">Updated</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts %}
+          <tr>
+            <td class="strong" data-label="Post">{{ post.excerpt }}</td>
+            <td data-label="Status">
+              <span class="badge {% if post.is_published %}badge-success{% else %}badge-warning{% endif %}">
+                {% if post.is_published %}Published{% else %}Hidden{% endif %}
+              </span>
+            </td>
+            <td data-label="Published">{{ post.created_at|date:"d M Y, H:i" }}</td>
+            <td data-label="Updated">{{ post.updated_at|naturaltime }}</td>
+            <td data-label="Actions">
+              <div class="row-actions">
+                <a class="inline-button" href="{{ post.get_absolute_url }}">View</a>
+                <a class="inline-button" href="{% url 'portfolio:feed_edit' post.pk %}">Edit</a>
+                <form method="post" action="{% url 'portfolio:feed_delete' post.pk %}" data-confirm="Delete this post permanently?">
+                  {% csrf_token %}
+                  <button class="inline-button danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>
+                <h2>No posts yet</h2>
+                <p>Publish the first build note from the feed composer.</p>
+                <a class="btn btn-small btn-primary" href="{% url 'portfolio:feed' %}#composer">Write a post</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% include "portfolio/partials/pagination.html" with page_obj=page_obj %}
+{% endblock %}

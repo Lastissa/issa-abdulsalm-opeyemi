@@ -1,0 +1,47 @@
+{% load static humanize %}
+<article class="post-card" id="post-{{ post.pk }}">
+  <div class="post-head">
+    <img class="avatar" src="{% static 'portfolio/images/profile.jpg' %}" alt="" width="42" height="42">
+    <div class="post-author">
+      <div class="post-author-name">
+        {{ post.author.get_full_name|default:post.author.username }}
+        <span class="badge">Owner</span>
+        {% if post.was_edited %}<span class="badge">Edited</span>{% endif %}
+      </div>
+      <div class="post-author-role">{{ site.role_title }} &middot; {{ post.created_at|naturaltime }}</div>
+    </div>
+
+    {% if request.user.is_staff %}
+    <details class="post-menu">
+      <summary aria-label="Post actions">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+      </summary>
+      <div class="post-menu-panel">
+        <a href="{% url 'portfolio:feed_edit' post.pk %}">Edit post</a>
+        <form method="post" action="{% url 'portfolio:feed_delete' post.pk %}" data-confirm="Delete this post permanently?">
+          {% csrf_token %}
+          <button class="danger" type="submit">Delete post</button>
+        </form>
+      </div>
+    </details>
+    {% endif %}
+  </div>
+
+  <div class="post-content">{{ post.content|linebreaks }}</div>
+
+  {% if post.image_url %}
+  <div class="post-media">
+    <img src="{{ post.image_url }}" alt="Image attached to a feed post from {{ post.created_at|date:'d M Y' }}" loading="lazy" referrerpolicy="no-referrer" data-hide-on-error>
+  </div>
+  {% endif %}
+
+  <div class="post-footer">
+    <div class="post-actions">
+      <button class="post-action" type="button" data-copy-link="{{ site.domain }}{% url 'portfolio:feed' %}#post-{{ post.pk }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 0 0-7.07-7.07l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.07 0l-2 2a5 5 0 0 0 7.07 7.07l1.1-1.1"/></svg>
+        Copy link
+      </button>
+    </div>
+    <a class="post-permalink" href="{% url 'portfolio:feed' %}#post-{{ post.pk }}">#{{ post.pk }}</a>
+  </div>
+</article>

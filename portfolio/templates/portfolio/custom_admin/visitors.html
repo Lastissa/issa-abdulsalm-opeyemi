@@ -1,0 +1,82 @@
+{% extends "portfolio/custom_admin/base_admin.html" %}
+{% load humanize %}
+
+{% block admin_title %}Visitors{% endblock %}
+
+{% block admin_actions %}
+<a class="btn btn-small btn-ghost" href="{% url 'portfolio:custom_admin_visitors_export' %}">Export CSV</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-head">
+  <div>
+    <h2>Visitor records</h2>
+    <p>{{ total|intcomma }} privacy-friendly record{{ total|pluralize }}. Only salted hashes are stored, never raw IP addresses.</p>
+  </div>
+</div>
+
+<section class="panel" aria-labelledby="visitors-table-heading">
+  <div class="panel-head">
+    <div class="panel-title" id="visitors-table-heading">All visitors</div>
+    <form class="search-form" method="get" role="search">
+      <label class="visually-hidden" for="visitor-search">Search visitors</label>
+      <input class="input" id="visitor-search" type="search" name="q" value="{{ q }}" placeholder="Search hash, path, or referrer" autocomplete="off">
+      <button class="btn btn-small" type="submit">Search</button>
+      {% if q %}<a class="btn btn-small btn-ghost" href="{% url 'portfolio:custom_admin_visitors' %}">Clear</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="panel-body panel-body-flush">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Visitor</th>
+            <th scope="col">Views</th>
+            <th scope="col">First seen</th>
+            <th scope="col">Last seen</th>
+            <th scope="col">Last path</th>
+            <th scope="col">Referrer</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for visitor in visitors %}
+          <tr>
+            <td class="strong" data-label="Visitor">
+              {{ visitor.short_hash }}
+              {% if visitor.is_returning %}<span class="badge">Returning</span>{% endif %}
+            </td>
+            <td data-label="Views">{{ visitor.views|intcomma }}</td>
+            <td data-label="First seen">{{ visitor.first_seen|date:"d M Y" }}</td>
+            <td data-label="Last seen">{{ visitor.last_seen|naturaltime }}</td>
+            <td class="path" data-label="Last path">{{ visitor.last_path|default:"-" }}</td>
+            <td data-label="Referrer">{{ visitor.referrer|default:"Direct" }}</td>
+            <td data-label="Actions">
+              <div class="row-actions">
+                <form method="post" action="{% url 'portfolio:custom_admin_visitor_delete' visitor.pk %}" data-confirm="Delete this visitor record?">
+                  {% csrf_token %}
+                  <button class="inline-button danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <h2>No visitor records{% if q %} match that search{% endif %}</h2>
+                <p>{% if q %}Try a shorter search term, or clear the filter.{% else %}Records appear after the first analytics flush.{% endif %}</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% include "portfolio/partials/pagination.html" with page_obj=page_obj q=q %}
+{% endblock %}

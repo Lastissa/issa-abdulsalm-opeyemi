@@ -1,5 +1,15 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /custom-admin/
+Disallow: /login/
+Disallow: /logout/
+Disallow: /feed/new/
+Disallow: /feed/*/edit/
+Disallow: /feed/*/delete/
+Disallow: /cv/download/
+Disallow: /cv/file/
 
 Sitemap: {{ domain }}/sitemap.xml
+
+# LLM-readable summary: {{ domain }}/llms.txt

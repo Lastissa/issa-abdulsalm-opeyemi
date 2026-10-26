@@ -5,51 +5,37 @@ from django.conf import settings
 FULL_NAME = "Issa Abdulsalam Opeyemi"
 SHORT_NAME = "Issa Abdulsalam"
 SITE_TITLE = "Issa Abdulsalam Opeyemi"
-ROLE_TITLE = "Backend Developer working towards Software Development"
+ROLE_TITLE = "Backend Developer"
+LOCATION = "Ilorin, Nigeria"
 
-TAGLINE = (
-    "Driven to building maintainable systems."
-    "Working with logic is my core in addition, i can pick up UI when the need comes, "
-    ""
-)
+TAGLINE = "I build maintainable systems and the interfaces that make them usable."
 
 # --- Canonical domain -----------------------------------------------------
-#Every canonical/OG/sitemap URL in
-# this project is derived from this single value.
-SITE_DOMAIN = getattr(settings, 'FULL_DOMAIN', 'http:localhost:8000')
+# Every canonical/OG/sitemap URL in this project is derived from this value.
+SITE_DOMAIN = getattr(settings, "FULL_DOMAIN", "http://localhost:8000").rstrip("/")
 
-# --- SEO defaults (used as fallback meta description/keywords) -----------
+# --- SEO defaults ---------------------------------------------------------
 DEFAULT_META_DESCRIPTION = (
-    "Issa Abdulsalam Opeyemi is a backend developer specialising in "
-    "Django and Django REST Framework, with mobile app experience in "
-    "Flutter and growing expertise in Go for high-concurrency backend "
-    "systems. Explore projects, CV, and skills."
+    "Issa Abdulsalam Opeyemi is a backend developer working with Django, "
+    "Django REST Framework, PostgreSQL, Flutter, and Go. Explore projects, "
+    "the build feed, and the CV."
 )
 
-DEFAULT_META_KEYWORDS = [
-    "Issa Abdulsalam Opeyemi",
-    "Issa Abdulsalam",
-    "Backend Developer",
-    "Django Developer",
-    "Django REST Framework Developer",
-    "Python Backend Engineer",
-    "Flutter Mobile Developer",
-    "Go Backend Developer",
-    "Software Developer Nigeria",
-    "Federal University of Ilorin Computer Science",
-]
+FEED_DESCRIPTION = (
+    "Short updates on what I am building, learning, and shipping: Django, "
+    "APIs, Flutter, Go, and the occasional hard-won lesson."
+)
 
 # --- Social / contact links ----------------------------------------------
-
 SOCIAL_LINKS = {
     "email": "lastissa11@gmail.com",
     "github": "https://github.com/Lastissa",
     "linkedin": "https://linkedin.com/in/lastissa",
     "twitter": "https://x.com/lastissa",
-    "whatsapp":  "https://wa.me/2348113577875"
+    "whatsapp": "https://wa.me/2348113577875",
 }
 
-# --- Education -------------------------------------------------------------
+# --- Education ------------------------------------------------------------
 EDUCATION = [
     {
         "institution": "Federal University of Ilorin, Kwara State",
@@ -59,18 +45,18 @@ EDUCATION = [
     },
 ]
 
-# --- Skills, grouped for the landing page ----------------------------------
+# --- Skills, grouped for the landing page ---------------------------------
 SKILLS = {
-    "Backend": ["Python", "Django", "Django REST Framework", "SQL"],
+    "Backend": ["Python", "Django", "Django REST Framework", "PostgreSQL", "SQL"],
     "Mobile": ["Flutter"],
-    "Deployment": ["Deployment / Render"],
+    "Deployment": ["Render", "WhiteNoise", "Gunicorn"],
     "Currently exploring": [
-        "Go -- chasing the concurrency Django can't natively give me, "
-        "and picking up a compiled language for backend work",
+        "Go for concurrency and compiled backend work",
+        "Redis and caching strategy",
     ],
 }
 
-# --- CV files ---------------------------------------------------------------
-
+# --- CV files -------------------------------------------------------------
+# Fallback used before the owner uploads a CV through the dashboard.
 CV_FILENAME = "issa-abdulsalam-opeyemi-cv.pdf"
 CV_DISPLAY_NAME = "Issa Abdulsalam Opeyemi - CV.pdf"

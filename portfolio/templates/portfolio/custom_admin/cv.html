@@ -1,0 +1,129 @@
+{% extends "portfolio/custom_admin/base_admin.html" %}
+{% load humanize %}
+
+{% block admin_title %}CV versions{% endblock %}
+
+{% block admin_actions %}
+<a class="btn btn-small btn-ghost" href="{% url 'portfolio:cv' %}">View public CV</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-head">
+  <div>
+    <h2>CV versions</h2>
+    <p>Upload a PDF, set the active version, or delete old files. The public CV page always serves the active version.</p>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <section class="panel" aria-labelledby="upload-heading">
+    <div class="panel-head">
+      <div class="panel-title" id="upload-heading">Upload a new CV</div>
+    </div>
+    <div class="panel-body">
+      <form method="post" enctype="multipart/form-data" class="auth-form" novalidate>
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="{{ form.file.id_for_label }}">PDF file</label>
+          {{ form.file }}
+          {% if form.file.errors %}<div class="form-error">{{ form.file.errors }}</div>{% endif %}
+          <p class="form-help">PDF only, up to 10 MB. A new upload becomes the active version immediately.</p>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Upload and activate</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="active-heading">
+    <div class="panel-head">
+      <div class="panel-title" id="active-heading">Active version</div>
+    </div>
+    <div class="panel-body">
+      {% if active_cv %}
+      <div class="version-item">
+        <div class="version-info">
+          <strong>{{ active_cv.original_name }}</strong>
+          <span>{{ active_cv.uploaded_at|date:"d M Y, H:i" }} &middot; {{ active_cv.size_display }}</span>
+        </div>
+        <span class="badge badge-success">Active</span>
+      </div>
+      <div class="form-actions">
+        <a class="btn btn-small" href="{% url 'portfolio:cv_file' %}" target="_blank" rel="noopener noreferrer">Open PDF</a>
+        <a class="btn btn-small btn-ghost" href="{% url 'portfolio:cv_download' %}">Download</a>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>
+        <h2>No CV uploaded</h2>
+        <p>The public CV page is currently using the bundled fallback, if one exists.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="versions-heading">
+  <div class="panel-head">
+    <div class="panel-title" id="versions-heading">All versions</div>
+    <span class="panel-subtitle">{{ versions|length }} file{{ versions|length|pluralize }}</span>
+  </div>
+  <div class="panel-body panel-body-flush">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">File</th>
+            <th scope="col">Size</th>
+            <th scope="col">Uploaded</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for version in versions %}
+          <tr>
+            <td class="strong" data-label="File">{{ version.original_name }}</td>
+            <td data-label="Size">{{ version.size_display }}</td>
+            <td data-label="Uploaded">{{ version.uploaded_at|date:"d M Y, H:i" }}</td>
+            <td data-label="Status">
+              {% if version.is_active %}
+              <span class="badge badge-success">Active</span>
+              {% else %}
+              <span class="badge">Archived</span>
+              {% endif %}
+            </td>
+            <td data-label="Actions">
+              <div class="row-actions">
+                {% if not version.is_active %}
+                <form method="post" action="{% url 'portfolio:custom_admin_cv_activate' version.pk %}">
+                  {% csrf_token %}
+                  <button class="inline-button" type="submit">Set active</button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'portfolio:custom_admin_cv_delete' version.pk %}" data-confirm="Delete this CV version permanently?">
+                  {% csrf_token %}
+                  <button class="inline-button danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <h2>No uploaded versions</h2>
+                <p>Use the form above to add the first PDF.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base/base_template.html" %}
+
+{% block meta_title %}Edit post | {{ site.full_name }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block canonical_url %}{{ site.domain }}{% url 'portfolio:feed' %}{% endblock %}
+
+{% block content %}
+<div class="container form-page">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{% url 'portfolio:feed' %}">Feed</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Edit post #{{ post.pk }}</span>
+  </nav>
+
+  <div class="form-card">
+    <p class="eyebrow">Owner tools</p>
+    <h1>Edit post</h1>
+    <p class="lead">Changes appear on the public feed immediately.</p>
+
+    <form method="post" class="auth-form" novalidate>
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="{{ form.content.id_for_label }}">Post content</label>
+        {{ form.content }}
+        {% if form.content.errors %}<div class="form-error">{{ form.content.errors }}</div>{% endif %}
+      </div>
+
+      <div class="field">
+        <label for="{{ form.image_url.id_for_label }}">Image URL <span class="muted">(optional)</span></label>
+        {{ form.image_url }}
+        {% if form.image_url.errors %}<div class="form-error">{{ form.image_url.errors }}</div>{% endif %}
+        <p class="form-help">Use a full http or https URL. The image is loaded from the source, not uploaded.</p>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Save changes</button>
+        <a class="btn btn-ghost" href="{{ post.get_absolute_url }}">Cancel</a>
+      </div>
+    </form>
+
+    <div class="auth-note">
+      Published {{ post.created_at|date:"d M Y, H:i" }}. Last updated {{ post.updated_at|date:"d M Y, H:i" }}.
+    </div>
+  </div>
+</div>
+{% endblock %}

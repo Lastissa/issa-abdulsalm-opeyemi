@@ -1,0 +1,142 @@
+{% extends "base/base_template.html" %}
+{% load static humanize %}
+
+{% block meta_title %}Feed | {{ site.full_name }}{% endblock %}
+{% block meta_description %}{{ site.feed_description }}{% endblock %}
+{% block og_title %}Feed | {{ site.full_name }}{% endblock %}
+{% block og_description %}{{ site.feed_description }}{% endblock %}
+{% block og_type %}website{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "{{ site.full_name }} - Build Feed",
+  "url": "{{ site.domain }}{% url 'portfolio:feed' %}",
+  "description": "{{ site.feed_description|escapejs }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ site.full_name }}",
+    "url": "{{ site.domain }}/"
+  },
+  "blogPost": [
+    {% for post in posts %}
+    {
+      "@type": "BlogPosting",
+      "headline": "{{ post.excerpt|escapejs }}",
+      "datePublished": "{{ post.created_at|date:'c' }}",
+      "dateModified": "{{ post.updated_at|date:'c' }}",
+      "url": "{{ site.domain }}{% url 'portfolio:feed' %}#post-{{ post.pk }}",
+      "author": {"@type": "Person", "name": "{{ site.full_name }}"},
+      {% if post.image_url %}"image": "{{ post.image_url|escapejs }}",{% endif %}
+      "articleBody": "{{ post.content|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="feed-shell">
+    <div class="feed-main">
+      <header class="feed-title">
+        <div>
+          <p class="eyebrow">The build feed</p>
+          <h1>Notes from the work</h1>
+          <p>{{ site.feed_description }}</p>
+        </div>
+        <a class="text-link" href="{% url 'portfolio:feed_rss' %}">RSS &rarr;</a>
+      </header>
+
+      {% if request.user.is_staff %}
+      <form class="composer" id="composer" method="post" action="{% url 'portfolio:feed_create' %}" novalidate>
+        {% csrf_token %}
+        <div class="composer-head">
+          <img class="avatar" src="{% static 'portfolio/images/profile.jpg' %}" alt="" width="42" height="42">
+          <div>
+            <strong>{{ site.full_name }}</strong>
+            <span>Posting as owner</span>
+          </div>
+        </div>
+
+        <div class="composer-body">
+          <label class="visually-hidden" for="{{ form.content.id_for_label }}">Post content</label>
+          {{ form.content }}
+          {% if form.content.errors %}<div class="form-error">{{ form.content.errors }}</div>{% endif %}
+
+          <div class="composer-image-row{% if form.image_url.value %} is-visible{% endif %}" id="composer-image-row">
+            <label class="visually-hidden" for="{{ form.image_url.id_for_label }}">Image URL</label>
+            {{ form.image_url }}
+            {% if form.image_url.errors %}<div class="form-error">{{ form.image_url.errors }}</div>{% endif %}
+            <p class="form-help">Paste a direct image URL. Uploads are not supported here.</p>
+          </div>
+        </div>
+
+        <div class="composer-actions">
+          <div class="composer-tools">
+            <button class="composer-tool" type="button" data-toggle-image="composer-image-row" aria-expanded="{% if form.image_url.value %}true{% else %}false{% endif %}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              Image URL
+            </button>
+            <span class="char-counter" id="composer-counter" data-counter-output>5000 left</span>
+          </div>
+          <button class="btn btn-primary" type="submit">Publish post</button>
+        </div>
+      </form>
+      {% endif %}
+
+      {% if posts %}
+        {% for post in posts %}
+          {% include "portfolio/partials/feed_post.html" with post=post %}
+        {% endfor %}
+        {% include "portfolio/partials/pagination.html" with page_obj=page_obj %}
+      {% else %}
+        <div class="feed-empty">
+          <h2>No posts yet</h2>
+          <p>The feed is where I document what I build, what breaks, and what I learn while fixing it. The first post will land here.</p>
+          {% if request.user.is_staff %}
+          <a class="btn btn-primary" href="#composer">Write the first post</a>
+          {% else %}
+          <a class="btn" href="{% url 'portfolio:projects' %}">Browse projects instead</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <aside class="feed-rail" aria-label="About this feed">
+      <div class="rail-card rail-profile">
+        <img class="avatar avatar-lg" src="{% static 'portfolio/images/profile.jpg' %}" alt="Portrait of {{ site.full_name }}" width="64" height="64">
+        <h2>{{ site.full_name }}</h2>
+        <p>{{ site.role_title }} &middot; {{ site.location }}</p>
+        <a class="btn btn-small" href="{% url 'portfolio:projects' %}">View projects</a>
+      </div>
+
+      <div class="rail-card">
+        <h2>Explore</h2>
+        <ul class="rail-links">
+          <li><a href="{% url 'portfolio:home' %}">Home <span aria-hidden="true">&rarr;</span></a></li>
+          <li><a href="{% url 'portfolio:projects' %}">Projects <span aria-hidden="true">&rarr;</span></a></li>
+          <li><a href="{% url 'portfolio:cv' %}">CV <span aria-hidden="true">&rarr;</span></a></li>
+          <li><a href="{% url 'portfolio:feed_rss' %}">RSS feed <span aria-hidden="true">&rarr;</span></a></li>
+        </ul>
+      </div>
+
+      <div class="rail-card">
+        <h2>About this feed</h2>
+        <p class="rail-note">{{ site.feed_description }}</p>
+      </div>
+
+      {% if not request.user.is_staff %}
+      <div class="rail-card">
+        <h2>Owner access</h2>
+        <p class="rail-note">Publishing is limited to the site owner.</p>
+        <a class="text-link" href="{% url 'portfolio:login' %}">Sign in &rarr;</a>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

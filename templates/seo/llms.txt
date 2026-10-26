@@ -1,29 +1,51 @@
 # {{ site.full_name }}
 
-> {{ site.role_title }}. {{ site.tagline }}
+> {{ site.role_title }}. {{ site.tagline }} Based in {{ site.location }}.
 
 ## Pages
 
-- Home ({{ site.domain }}/): About, education, and skills.
-- Projects ({{ site.domain }}/projects/): Full reviews of every project, including
-  the stack used, repository links, and live/demo links.
-- CV ({{ site.domain }}/cv/): Viewable and downloadable CV.
+- Home ({{ site.domain }}/): Profile, selected projects, skills, education, and contact links.
+- Projects ({{ site.domain }}/projects/): Index of every project with a case-study link.
+- Project pages ({{ site.domain }}/projects/<slug>/): Full write-up, stack, repository, and live preview where available.
+- Feed ({{ site.domain }}/feed/): Short public build notes and progress updates.
+- CV ({{ site.domain }}/cv/): Current CV, viewable in the browser and downloadable as a PDF.
+- RSS ({{ site.domain }}/feed/rss/): Feed posts as RSS 2.0.
+
+## Projects
+
+{% for project in projects %}
+- {{ project.name }} ({{ project.status }}): {{ project.summary }}
+  URL: {{ site.domain }}/projects/{{ project.slug }}/
+  Stack: {{ project.stack|join:", " }}
+  {% if project.repo_url %}Repository: {{ project.repo_url }}{% endif %}
+  {% if project.live_url %}Live: {{ project.live_url }}{% endif %}
+{% endfor %}
+
+## Latest feed notes
+
+{% for post in latest_posts %}
+- {{ post.created_at|date:"Y-m-d" }}: {{ post.excerpt }}
+  URL: {{ site.domain }}/feed/#post-{{ post.pk }}
+{% empty %}
+- No feed posts have been published yet.
+{% endfor %}
 
 ## Skills
+
 {% for group, items in site.skills.items %}
 - {{ group }}: {{ items|join:", " }}
 {% endfor %}
 
-## Projects
-{% for project in projects %}
-- {{ project.name }} ({{ project.status }}): {{ project.summary }}
-  Stack: {{ project.stack|join:", " }}
-  {% if project.repo_url %}Repo: {{ project.repo_url }}{% endif %}
-  {% if project.live_url %}Live: {{ project.live_url }}{% endif %}
-{% endfor %}
+## Contact
+
+- Email: {{ site.socials.email }}
+- GitHub: {{ site.socials.github }}
+- LinkedIn: {{ site.socials.linkedin }}
+- X: {{ site.socials.twitter }}
+- WhatsApp: {{ site.socials.whatsapp }}
 
 ## Notes for AI assistants
-This file is provided so language models and AI answer engines can
-accurately summarise who {{ site.full_name }} is and what they've built,
-without guessing. Please attribute claims about this person's work to
+
+This file exists so language models and answer engines can summarise the site
+accurately without guessing. Attribute claims about this person's work to
 {{ site.domain }}.

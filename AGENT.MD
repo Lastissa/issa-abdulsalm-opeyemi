@@ -40,3 +40,27 @@ OTHERS:
 
 MOST IMPORTANTLY
 -   MAKE NO MISTALE
+
+
+
+## AVOID THIS WRITING STYLES
+-   "in today's face-paced world"
+-   "delve" and "tapestry"
+-   "its not X - its Y"
+-   "not only X but also Y"
+-   long interupting aside
+-   forced group of three
+-   fake expert consensus
+-   vague source of claims
+-   inflated significane
+-   unnessary praises
+-   coperate buzzwords
+-   repetitve sentence rhythms
+-   "additionally, morever, furthermore"
+-   overexplaining simple terms
+-   "lets break it down"
+-   "the key takeaways is"
+-   "challendges and opportunities"
+-   "serves as a testament to"
+-   "underscore the importance of"
+-   "i hope this helps"

@@ -1,28 +1,51 @@
-"""
-portfolio/sitemaps.py
-
-Three real pages, three sitemap entries. Wired into P_FOLIO/urls.py at
-/sitemap.xml. See workflow.md, decision S1.
-"""
+"""Modern sitemap: real URLs, accurate lastmod, no ignored priority/changefreq."""
 
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from django.utils import timezone
+
+from .data import PROJECTS
+from .models import CVVersion, FeedPost
 
 
-class StaticViewSitemap(Sitemap):
-    changefreq = "monthly"
+class PortfolioSitemap(Sitemap):
     protocol = "https"
 
     def items(self):
-        # (url name, priority)
-        return [
-            ("portfolio:landing", 1.0),
-            ("portfolio:projects", 0.9),
-            ("portfolio:cv", 0.7),
+        latest_post = (
+            FeedPost.objects.filter(is_published=True)
+            .order_by("-updated_at")
+            .first()
+        )
+        latest_cv = CVVersion.objects.filter(is_active=True).first()
+
+        entries = [
+            {"name": "portfolio:home", "lastmod": None},
+            {"name": "portfolio:projects", "lastmod": None},
+            {
+                "name": "portfolio:feed",
+                "lastmod": latest_post.updated_at if latest_post else None,
+            },
+            {
+                "name": "portfolio:cv",
+                "lastmod": latest_cv.uploaded_at if latest_cv else None,
+            },
         ]
+        entries.extend(
+            {
+                "name": "portfolio:project_detail",
+                "args": [project["slug"]],
+                "lastmod": None,
+            }
+            for project in PROJECTS
+        )
+        return entries
 
     def location(self, item):
-        return reverse(item[0])
+        return reverse(item["name"], args=item.get("args", []))
 
-    def priority(self, item):
-        return item[1]
+    def lastmod(self, item):
+        value = item.get("lastmod")
+        if value and timezone.is_naive(value):
+            value = timezone.make_aware(value, timezone.get_current_timezone())
+        return value

@@ -1,47 +1,117 @@
 {% extends "base/base_template.html" %}
-{% load static %}
 
-{% block meta_title %}CV | Issa Abdulsalam Opeyemi{{ site.title }}{% endblock %}
-{% block meta_description %}View or download the CV of {{ site.full_name }}, {{ site.role_title }} specialising in Django, Django REST Framework, and Flutter mobile development.{% endblock %}
-{% block meta_keywords %}{{ site.default_keywords }}, CV, resume, curriculum vitae{% endblock %}
+{% block meta_title %}CV | {{ site.full_name }}{% endblock %}
+{% block meta_description %}View or download the CV of {{ site.full_name }}, a {{ site.role_title }} working with Django, Django REST Framework, PostgreSQL, Flutter, and Go.{% endblock %}
+{% block og_title %}CV | {{ site.full_name }}{% endblock %}
+{% block og_description %}View or download the CV of {{ site.full_name }}.{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "ProfilePage",
+  "url": "{{ site.domain }}{% url 'portfolio:cv' %}",
   "about": {
     "@type": "Person",
     "name": "{{ site.full_name }}",
-    "jobTitle": "{{ site.role_title }}"
-  },
-  "url": "{{ site.domain }}{{ request.path }}"
+    "jobTitle": "{{ site.role_title }}",
+    "url": "{{ site.domain }}/",
+    "address": {"@type": "PostalAddress", "addressLocality": "Ilorin", "addressCountry": "NG"}
+  }
 }
 </script>
 {% endblock %}
 
 {% block content %}
-<section style="border-top: none;">
-  <p class="section-eyebrow">Curriculum vitae</p>
-  <h1>{{ site.full_name }} &mdash; CV</h1>
-  <p class="lead muted">View it below, or grab the PDF for offline reading.</p>
-
-  <div class="cv-actions">
-    <a class="btn btn-primary" href="{% url 'portfolio:cv_download' %}">Download CV (PDF)</a>
-    {% if cv_exists %}
-    <a class="btn" href="{% static 'portfolio/files/'|add:site.cv_filename %}" target="_blank" rel="noopener noreferrer">Open in new tab</a>
-    {% endif %}
-  </div>
+<div class="container cv-page">
+  <header class="cv-header">
+    <div>
+      <p class="eyebrow">Curriculum vitae</p>
+      <h1>{{ site.full_name }}</h1>
+      <p class="lead">View it below, download the PDF, or open it in a new tab.</p>
+    </div>
+    <div class="cv-actions">
+      {% if cv_exists %}
+      <a class="btn btn-primary" href="{% url 'portfolio:cv_download' %}">Download PDF</a>
+      <a class="btn" href="{% url 'portfolio:cv_file' %}" target="_blank" rel="noopener noreferrer">Open in new tab</a>
+      {% endif %}
+      {% if request.user.is_staff %}
+      <a class="btn btn-ghost" href="{% url 'portfolio:custom_admin_cv' %}">Manage CVs</a>
+      {% endif %}
+    </div>
+  </header>
 
   {% if cv_exists %}
-  <div class="cv-embed-wrap">
-    <iframe src="{% static 'portfolio/files/'|add:site.cv_filename %}" title="{{ site.full_name }} CV"></iframe>
+  <div class="cv-meta">
+    <span>Updated {{ cv.updated|date:"d M Y" }}</span>
+    <span>{{ cv.size|filesizeformat }}</span>
+    {% if cv.is_static %}<span>Bundled copy</span>{% else %}<span>Uploaded via dashboard</span>{% endif %}
   </div>
+
+  <div class="cv-viewer">
+    <div class="cv-toolbar">
+      <div class="browser-dots" aria-hidden="true">
+        <span class="browser-dot"></span>
+        <span class="browser-dot"></span>
+        <span class="browser-dot"></span>
+      </div>
+      <span class="browser-url">{{ cv.name }}</span>
+      <div class="browser-actions">
+        <a class="browser-action" href="{% url 'portfolio:cv_file' %}" target="_blank" rel="noopener noreferrer" aria-label="Open CV in a new tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+        </a>
+        <a class="browser-action" href="{% url 'portfolio:cv_download' %}" aria-label="Download CV">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+        </a>
+      </div>
+    </div>
+    <iframe src="{% url 'portfolio:cv_file' %}" title="CV of {{ site.full_name }}"></iframe>
+  </div>
+  <p class="form-help">If the PDF does not render on your device, use the download or new-tab buttons above.</p>
   {% else %}
-  <div class="cv-fallback">
-    CV not uploaded yet. Place the PDF at
-    portfolio/static/portfolio/files/{{ site.cv_filename }}
+  <div class="cv-empty">
+    <h2>No CV has been uploaded yet</h2>
+    <p>The public CV page is ready. Sign in to the owner dashboard and upload a PDF to make it available here.</p>
+    {% if request.user.is_staff %}
+    <a class="btn btn-primary" href="{% url 'portfolio:custom_admin_cv' %}">Upload a CV</a>
+    {% else %}
+    <a class="btn" href="{% url 'portfolio:login' %}">Owner login</a>
+    {% endif %}
   </div>
   {% endif %}
-</section>
+
+  {% if versions %}
+  <section class="section-tight" aria-labelledby="versions-heading">
+    <div class="section-header">
+      <p class="eyebrow">Owner tools</p>
+      <h2 id="versions-heading">CV versions</h2>
+      <p>One version is active at a time. Older files stay available until you delete them.</p>
+    </div>
+    <ul class="version-list">
+      {% for version in versions %}
+      <li class="version-item">
+        <div class="version-info">
+          <strong>{{ version.original_name }}</strong>
+          <span>{{ version.uploaded_at|date:"d M Y, H:i" }} &middot; {{ version.size_display }}</span>
+        </div>
+        <div class="version-actions">
+          {% if version.is_active %}
+          <span class="badge badge-success">Active</span>
+          {% else %}
+          <form method="post" action="{% url 'portfolio:custom_admin_cv_activate' version.pk %}">
+            {% csrf_token %}
+            <button class="inline-button" type="submit">Set active</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'portfolio:custom_admin_cv_delete' version.pk %}" data-confirm="Delete this CV version?">
+            {% csrf_token %}
+            <button class="inline-button danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
 {% endblock %}
