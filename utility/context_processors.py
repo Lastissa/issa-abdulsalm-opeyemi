@@ -1,14 +1,3 @@
-"""
-utility/context_processors.py
-
-Registered in P_FOLIO/settings.py under TEMPLATES -> OPTIONS -> context_processors.
-Makes site-wide config (utility/config.py) available in EVERY template as
-`{{ site }}`, without every view having to pass it manually.
-
-See workflow.md, decision U1, for why this lives in its own app-less
-"utility" package instead of inside the portfolio app.
-"""
-
 from . import config
 
 
