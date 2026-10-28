@@ -1,0 +1,47 @@
+{% load static %}
+<form class="composer"
+      id="composer"
+      method="post"
+      action="{% url 'portfolio:feed_create' %}"
+      hx-post="{% url 'portfolio:feed_create' %}"
+      hx-swap="none"
+      {% if oob %}hx-swap-oob="outerHTML"{% endif %}
+      novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-error" role="alert">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <div class="composer-head">
+    <img class="avatar" src="{{ site.avatar }}" alt="" width="42" height="42">
+    <div>
+      <strong>{{ site.full_name }}</strong>
+      <span>Posting as owner</span>
+    </div>
+  </div>
+
+  <div class="composer-body">
+    <label class="visually-hidden" for="{{ form.content.id_for_label }}">Post content</label>
+    {{ form.content }}
+    {% if form.content.errors %}<div class="form-error">{{ form.content.errors }}</div>{% endif %}
+
+    <div class="composer-image-row{% if form.image_url.value %} is-visible{% endif %}" id="composer-image-row">
+      <label class="visually-hidden" for="{{ form.image_url.id_for_label }}">Image URL</label>
+      {{ form.image_url }}
+      {% if form.image_url.errors %}<div class="form-error">{{ form.image_url.errors }}</div>{% endif %}
+      <p class="form-help">Paste a direct image URL. Uploads are not supported here.</p>
+    </div>
+  </div>
+
+  <div class="composer-actions">
+    <div class="composer-tools">
+      <button class="composer-tool" type="button" data-toggle-image="composer-image-row" aria-expanded="{% if form.image_url.value %}true{% else %}false{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        Image URL
+      </button>
+      <span class="char-counter" id="composer-counter" data-counter-output>5000 left</span>
+    </div>
+    <button class="btn btn-primary" type="submit">Publish post</button>
+  </div>
+</form>

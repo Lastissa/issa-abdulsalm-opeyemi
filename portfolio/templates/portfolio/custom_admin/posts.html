@@ -47,7 +47,12 @@
               <div class="row-actions">
                 <a class="inline-button" href="{{ post.get_absolute_url }}">View</a>
                 <a class="inline-button" href="{% url 'portfolio:feed_edit' post.pk %}">Edit</a>
-                <form method="post" action="{% url 'portfolio:feed_delete' post.pk %}" data-confirm="Delete this post permanently?">
+                <form method="post"
+                      action="{% url 'portfolio:custom_admin_post_delete' post.pk %}"
+                      hx-post="{% url 'portfolio:custom_admin_post_delete' post.pk %}"
+                      hx-target="closest tr"
+                      hx-swap="delete"
+                      hx-confirm="Delete this post permanently?">
                   {% csrf_token %}
                   <button class="inline-button danger" type="submit">Delete</button>
                 </form>

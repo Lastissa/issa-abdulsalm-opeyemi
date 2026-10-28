@@ -1,0 +1,13 @@
+{% for post in posts %}
+  {% include "portfolio/partials/feed_post.html" with post=post %}
+{% empty %}
+  <div class="feed-empty" id="feed-empty">
+    <h2>No posts yet</h2>
+    <p>The feed is where I document what I build, what breaks, and what I learn while fixing it. The first post will land here.</p>
+    {% if request.user.is_staff %}
+    <a class="btn btn-primary" href="#composer">Write the first post</a>
+    {% else %}
+    <a class="btn" href="{% url 'portfolio:projects' %}">Browse projects instead</a>
+    {% endif %}
+  </div>
+{% endfor %}

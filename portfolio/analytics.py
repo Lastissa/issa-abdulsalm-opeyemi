@@ -1,15 +1,12 @@
 """Cache-backed analytics.
 
-Every public page view increments counters in the file-based cache. Nothing
+Every public page view increments counters in the cache. Nothing
 touches the database during the request. A cron job calls the flush endpoint
 (or ``manage.py flush_analytics``) every five minutes to move the accumulated
 numbers into ``PageView`` and ``Visitor`` rows.
 """
 
-from __future__ import annotations
-
 import hashlib
-import logging
 import re
 from datetime import date, datetime
 from urllib.parse import urlparse
@@ -22,16 +19,73 @@ from django.utils import timezone
 
 from .models import PageView, Visitor
 
-logger = logging.getLogger(__name__)
+from service_internal.caches import get_cache, set_cache, del_cache
+from service_internal.logger import error_logger
 
 CACHE_PREFIX = "analytics"
 DATES_KEY = f"{CACHE_PREFIX}:dates"
-LOCK_KEY = f"{CACHE_PREFIX}:flush_lock"
-CACHE_TIMEOUT = 60 * 60 * 24 * 7
+LOCK_KEY = f"{CACHE_PREFIX}:cache_to_db_transfer_in_progress"
+CACHE_TIMEOUT = 60 * 60 * 24 * 7 # a week
+
 
 BOT_RE = re.compile(
-    r"(bot|crawler|spider|slurp|bingpreview|facebookexternalhit|headless|"
-    r"python-requests|curl|wget|scrapy|semrush|ahrefs)",
+    r"("
+    # General bots and crawlers
+    r"bot|crawler|spider|slurp|"
+    r"bingpreview|headless|"
+
+    # Search engines
+    r"googlebot|googleother|google-extended|"
+    r"adsbot-google|mediapartners-google|"
+    r"bingbot|msnbot|duckduckbot|duckassistbot|"
+    r"baiduspider|yandexbot|sogou|exabot|"
+    r"applebot|applebot-extended|petalbot|"
+    r"360spider|yisouspider|"
+
+    # AI crawlers and AI assistants
+    r"gptbot|chatgpt-user|oai-searchbot|oai-adsbot|"
+    r"claudebot|claude-searchbot|claude-user|"
+    r"anthropic-ai|claude-web|"
+    r"perplexitybot|perplexity-user|"
+    r"bytespider|ccbot|cohere-ai|"
+    r"meta-externalagent|meta-externalfetcher|"
+    r"meta-webindexer|mistralai|mistral-ai|"
+    r"amazonbot|youbot|diffbot|"
+
+    # Social media and link previews
+    r"facebookexternalhit|facebookbot|"
+    r"twitterbot|linkedinbot|"
+    r"telegrambot|whatsapp|slackbot|"
+    r"discordbot|embedly|quora link preview|"
+
+    # SEO and website auditing tools
+    r"semrush|ahrefs|mj12bot|dotbot|"
+    r"blexbot|dataforseobot|serpstatbot|"
+    r"rogerbot|linkdexbot|seznambot|"
+    r"screaming frog|siteauditbot|"
+    r"megaindex|netpeak|"
+
+    # HTTP clients and scraping libraries
+    r"python-requests|python-httpx|"
+    r"aiohttp|curl|wget|scrapy|"
+    r"go-http-client|node-fetch|"
+    r"axios|okhttp|libwww-perl|"
+    r"java/|postmanruntime|insomnia|"
+
+    # Automated browsers and testing tools
+    r"headlesschrome|phantomjs|"
+    r"selenium|playwright|puppeteer|"
+    r"webdriver|browserless|"
+
+    # Monitoring and uptime checks
+    r"uptimerobot|pingdom|statuscake|"
+    r"site24x7|datadog|"
+
+    # Archives and other automated services
+    r"ia_archiver|archive\.org_bot|"
+    r"turnitinbot|censysinspect|"
+    r"shodan|nikto|sqlmap"
+    r")",
     re.IGNORECASE,
 )
 
@@ -89,12 +143,11 @@ def is_trackable(path: str, user_agent: str = "") -> bool:
 
 
 def make_visitor_hash(raw_id: str) -> str:
-    return hashlib.sha256(
-        f"{raw_id}:{settings.SECRET_KEY}".encode("utf-8")
-    ).hexdigest()[:20]
+    return hashlib.sha256(f"{raw_id}:{settings.SECRET_KEY}".encode("utf-8")).hexdigest()[:20]
 
 
 def _today_key() -> str:
+    "return today localdate in iso format"
     return timezone.localdate().isoformat()
 
 
@@ -120,18 +173,13 @@ def _increment(key: str, amount: int = 1) -> None:
 
 
 def _add_to_registry(key: str, value: str) -> None:
-    values = cache.get(key) or []
+    values = get_cache(key) or []
     if value not in values:
         values.append(value)
         cache.set(key, values, timeout=CACHE_TIMEOUT)
 
 
-def record_view(
-    path: str,
-    raw_visitor_id: str,
-    user_agent: str = "",
-    referrer: str = "",
-) -> None:
+def record_view(path: str,raw_visitor_id: str,user_agent: str = "",referrer: str = "",) -> None:
     """Increment the cache counters for one page view."""
     path = path[:255]
     day = _today_key()
@@ -141,12 +189,12 @@ def record_view(
     _add_to_registry(DATES_KEY, day)
     _add_to_registry(_paths_key(day), path)
 
-    visitors = cache.get(_visitors_key(day)) or {}
+    visitors = get_cache(_visitors_key(day)) or {}
     now = timezone.now().isoformat()
     referrer_host = ""
     if referrer:
         try:
-            referrer_host = urlparse(referrer).netloc[:200]
+            referrer_host = urlparse(referrer).netloc[:200] # first 200 char of the domain name
         except ValueError:
             referrer_host = ""
 
@@ -171,16 +219,16 @@ def record_view(
 
 def pending_snapshot() -> dict:
     """Read the unflushed cache counters for the dashboard."""
-    days = cache.get(DATES_KEY) or []
+    days = get_cache(DATES_KEY) or []
     total_views = 0
     total_paths = 0
     total_visitors = 0
     for day in days:
-        paths = cache.get(_paths_key(day)) or []
+        paths = get_cache(_paths_key(day)) or []
         for path in paths:
-            total_views += cache.get(_views_key(day, path)) or 0
+            total_views += get_cache(_views_key(day, path)) or 0
             total_paths += 1
-        total_visitors += len(cache.get(_visitors_key(day)) or {})
+        total_visitors += len(get_cache(_visitors_key(day)) or {})
     return {
         "views": total_views,
         "paths": total_paths,
@@ -206,15 +254,16 @@ def _clear_cache(days: list[str]) -> None:
     for day in days:
         keys.append(_paths_key(day))
         keys.append(_visitors_key(day))
-        for path in cache.get(_paths_key(day)) or []:
+        for path in get_cache(_paths_key(day)) or []:
             keys.append(_views_key(day, path))
     cache.delete_many(keys)
 
 
-def flush() -> dict:
+def flush_caches_count_to_db() -> dict:
     """Move cached counters into the database. Safe to call concurrently."""
+    
     if not cache.add(LOCK_KEY, "1", timeout=300):
-        return {"ok": False, "error": "flush_already_running"}
+        return {"ok": False, "error": "cache_to_db_tranfer_already_running"}
 
     summary = {
         "ok": True,
@@ -223,7 +272,7 @@ def flush() -> dict:
         "visitor_rows": 0,
         "views": 0,
     }
-    days = list(cache.get(DATES_KEY) or [])
+    days = sorted(get_cache(DATES_KEY) or [])
 
     try:
         with transaction.atomic():
@@ -233,8 +282,8 @@ def flush() -> dict:
                 except (TypeError, ValueError):
                     continue
 
-                for path in list(cache.get(_paths_key(day_key)) or []):
-                    count = cache.get(_views_key(day_key, path)) or 0
+                for path in list(get_cache(_paths_key(day_key)) or []):
+                    count = get_cache(_views_key(day_key, path)) or 0
                     if count <= 0:
                         continue
                     row, created = PageView.objects.get_or_create(
@@ -251,7 +300,7 @@ def flush() -> dict:
                     summary["views"] += count
                     summary["page_rows"] += 1
 
-                visitors = cache.get(_visitors_key(day_key)) or {}
+                visitors = get_cache(_visitors_key(day_key)) or {}
                 for visitor_hash, data in visitors.items():
                     if not data:
                         continue
@@ -287,7 +336,7 @@ def flush() -> dict:
         _clear_cache(days)
         return summary
     except Exception:
-        logger.exception("analytics: flush failed")
+        error_logger("ANALYTICS: cache transfer to database failed")
         raise
     finally:
-        cache.delete(LOCK_KEY)
+        del_cache(LOCK_KEY)

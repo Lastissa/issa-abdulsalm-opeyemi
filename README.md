@@ -1,36 +1,26 @@
-# Issa Abdulsalam Opeyemi - Portfolio, Feed, and Owner Dashboard
+# Portfolio
 
-A Django portfolio rebuilt around four public routes and a private owner area:
+A simple portfolio site to showcase work and updates. 
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Home, profile, selected projects, skills, education |
-| `/projects` | Project index with case-study links and live previews |
-| `/feed` | Public, Facebook-style build feed (owner publishes) |
-| `/cv` | Current CV, embedded and downloadable |
-| `/login` | Owner sign-in (staff accounts only) |
-| `/custom-admin` | Analytics dashboard, visitor records, posts, CV versions |
+| `/` | Home |
+| `/projects` | Projects |
+| `/feed` | Updates |
+| `/cv` | CV |
+| `/login` | Sign in |
+| `/custom-admin` | Owner area |
 
-No frontend framework and no build step. Templates, one CSS file, and one small
-JavaScript file.
+Django templates, one stylesheet, a small JavaScript file, and locally vendored HTMX and Alpine. No build step.
 
-## What changed
+## Features
 
-- **Owner area**: staff login, CV version history (activate/delete), feed
-  composer, post editing/deletion, analytics dashboard.
-- **Feed**: public posts with an optional external image URL. No image uploads.
-- **Projects**: the index is now a clean card grid. Each project has its own
-  case-study page with a browser-style iframe preview and fullscreen control.
-- **Theme**: near-white light mode (`#ffffff`) and deep dark mode (`#070b10`),
-  with a persistent toggle that respects the system preference on first visit.
-- **Mobile-first CSS**: 44px+ tap targets, no horizontal scroll, responsive
-  tables that become cards on small screens.
-- **Modern SEO**: canonical URLs, Open Graph/Twitter cards, JSON-LD, RSS,
-  `llms.txt`, and a sitemap that uses `lastmod` without the ignored
-  `changefreq`/`priority` fields.
-- **Cached analytics**: page views are counted in a file-based cache. A
-  protected endpoint (or management command) flushes them to SQLite every five
-  minutes. No database write on page load.
+- Clean, mobile-friendly design
+- Projects and updates sections
+- CV view and download
+- Owner area for managing content
+- Light and dark theme toggle
+- Splash screen on first load
 
 ## Setup
 
@@ -45,15 +35,20 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-The project intentionally does not run migrations automatically. Run them once:
+Run migrations and create an account:
 
 ```bash
-python manage.py makemigrations portfolio
 python manage.py migrate
 python manage.py createsuperuser
 ```
 
-Then start the development server:
+To add missing default content:
+
+```bash
+python manage.py seed_content
+```
+
+Start the development server:
 
 ```bash
 python manage.py runserver
@@ -62,15 +57,52 @@ python manage.py runserver
 Upload a CV and publish a post from `/custom-admin` after signing in at
 `/login`.
 
+## Editing site content
+
+- `/admin/portfolio/` contains the editable content models. Most models have
+  inline or list-editable fields so routine updates do not require code changes.
+- `Site settings` is a singleton row: identity, SEO copy, hero copy, contact
+  copy, CV display name, toast position, and default theme.
+- `Page content` holds the eyebrow, heading, intro, and metadata for the
+  projects, feed, CV, and login pages.
+- `Projects` include the case-study fields and an inline stack editor.
+- CV files are managed at `/custom-admin/cv/`; old versions remain available
+  until deleted, and exactly one version can be active.
+
+The public site is cached as a single payload for ten minutes. Saving or
+deleting any content model invalidates that cache automatically.
+
+## Database
+
+- `DEBUG=True` uses SQLite
+- `DEBUG=False` uses PostgreSQL. Set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_SSLMODE` in `.env`. If any are missing, the app will fail to start.
+
+## Storage
+
+- `DEBUG=True` uses local files
+- `DEBUG=False` uses S3. Set `AWS_ENDPOINT_URL_S3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET` in `.env`. CVs are streamed through the app.
+
 ## Environment
 
 | Variable | Default | Notes |
 | --- | --- | --- |
-| `PRODUCTION` | `False` | Set to `True` on HTTPS production |
-| `ALLOWED_HOST` | localhost + ngrok host | Comma-separated |
+| `DEBUG` | `False` | Use `True` locally; `False` on HTTPS production |
+| `DB_NAME` | empty | Required when `DEBUG=False` |
+| `DB_USER` | empty | Required when `DEBUG=False` |
+| `DB_PASSWORD` | empty | Required when `DEBUG=False` |
+| `DB_HOST` | empty | Required when `DEBUG=False` |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_SSLMODE` | `require` | PostgreSQL SSL mode |
+| `DB_CONN_MAX_AGE` | `60` | Persistent DB connection lifetime in seconds |
+| `AWS_ENDPOINT_URL_S3` | empty | Required when `DEBUG=False` |
+| `AWS_ACCESS_KEY_ID` | empty | Required when `DEBUG=False` |
+| `AWS_SECRET_ACCESS_KEY` | empty | Required when `DEBUG=False` |
+| `AWS_REGION` | empty | Required when `DEBUG=False` |
+| `S3_BUCKET` | empty | Required when `DEBUG=False` |
+| `ALLOWED_HOST` | localhost, 127.0.0.1, and ngrok host | Comma-separated |
 | `FULL_DOMAIN` | `http://localhost:8000` | Used in canonical/OG/sitemap/RSS |
 | `CSRF_TRUSTED_ORIGINS` | empty | Comma-separated, needed behind a proxy |
-| `ANALYTICS_FLUSH_TOKEN` | empty | Required by the flush endpoint |
+| `SY_SECRET` | empty | Required by the flush endpoint |
 
 Generate a token:
 
@@ -81,7 +113,8 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 ## Analytics
 
 Every public GET request increments cache counters keyed by path and day. The
-middleware skips staff users, bots, static/media files, and private routes.
+middleware skips staff users, bots, static/media files, HTMX fragments, and
+private routes.
 
 Flush the cache every five minutes with either:
 
@@ -93,66 +126,72 @@ or the HTTP endpoint:
 
 ```bash
 curl -fsS -X POST \
-  -H "Authorization: Bearer $ANALYTICS_FLUSH_TOKEN" \
+  -H "Authorization: Bearer $SY_SECRET" \
   https://your-domain.com/custom-admin/api/analytics/flush/
 ```
 
 Example cron entry:
 
 ```cron
-*/5 * * * * curl -fsS -X POST -H "Authorization: Bearer $ANALYTICS_FLUSH_TOKEN" https://your-domain.com/custom-admin/api/analytics/flush/ >/dev/null 2>&1
+*/5 * * * * curl -fsS -X POST -H "Authorization: Bearer $SY_SECRET" https://your-domain.com/custom-admin/api/analytics/flush/ >/dev/null 2>&1
 ```
 
-The endpoint returns JSON:
+The endpoint returns JSON with a consistent `status` and `detail`, plus the
+flush result:
 
 ```json
-{"ok": true, "days": 1, "page_rows": 3, "visitor_rows": 4, "views": 42}
+{
+  "status": "ok",
+  "detail": "Flushed 42 views.",
+  "result": {
+    "ok": true,
+    "days": 1,
+    "page_rows": 3,
+    "visitor_rows": 4,
+    "views": 42
+  },
+  "ok": true
+}
 ```
 
 A cache lock prevents two flushes from running at the same time. If the token is
-not configured, the endpoint returns `503` and does nothing.
+not configured, the endpoint returns `503` and does nothing. Visitor records
+store only a salted hash, never a raw IP address. The dashboard can search,
+export CSV, and delete records.
 
-Visitor records store only a salted hash, never a raw IP address. The dashboard
-can search, export CSV, and delete records.
+## JSON and HTMX conventions
+
+- JSON endpoints return at least `{ "status": "ok|error", "detail": "..." }`.
+  Login/logout may also include `redirect`; the analytics flush includes
+  `result` and `ok`.
+- HTMX mutation endpoints return an HTML fragment, or an empty `200` with
+  `HX-Trigger`/`HX-Redirect` headers. Delete endpoints deliberately use `200`
+  with an empty body so `hx-swap="delete"` removes the row.
+- Toasts are triggered by Django messages on page load or by the `toast` key in
+  an `HX-Trigger` response. The position is controlled by
+  `SiteSettings.toast_position`.
+- The login form posts JSON with `X-Requested-With: XMLHttpRequest`, disables and
+  blurs its submit button while the request is in flight, and keeps the button
+  locked while the browser follows a successful redirect.
 
 ## Static files
-
-For production:
 
 ```bash
 python manage.py collectstatic --noinput
 ```
 
-WhiteNoise serves the collected files. Uploaded CVs live in `media/` and are
-served through Django views (`/cv/file/` and `/cv/download/`), so access and
-headers stay under application control.
+WhiteNoise serves static files. HTMX and Alpine are vendored locally. CVs are served through Django views.
 
 ## Project layout
 
 ```
-P_FOLIO/                 settings, root URLs
-portfolio/
-  analytics.py           cache counters + flush logic
-  data.py                static project content
-  forms.py               login, feed, CV forms
-  middleware.py          page-view middleware
-  models.py              FeedPost, CVVersion, PageView, Visitor
-  views.py               public pages + owner dashboard
-  sitemaps.py            modern sitemap
-  templates/portfolio/   public + dashboard templates
-  static/portfolio/      CSS, JS, images, manifest, fallback CV
-templates/base/          base layout + critical CSS
-templates/seo/           robots.txt + llms.txt
-utility/                 site identity/config
+P_FOLIO/           settings, URLs
+portfolio/         apps, views, models, templates, static
+templates/         base and SEO templates
+service_internal/  cache and context helpers
 ```
 
 ## Notes
 
-- The bundled fallback CV at
-  `portfolio/static/portfolio/files/issa-abdulsalam-opeyemi-cv.pdf` is used until
-  the first upload. Uploading through `/custom-admin/cv/` takes over
-  automatically.
-- Feed images are external URLs only. Broken images are removed by the
-  front-end instead of leaving an empty panel.
-- The public feed is readable by anyone. Publishing and editing require a staff
-  account.
+- Set `FULL_DOMAIN` in production for correct links.
+- Analytics flushes via `/flush-cache/` or `python manage.py flush_analytics`.

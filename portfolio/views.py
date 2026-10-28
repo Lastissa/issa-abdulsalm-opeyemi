@@ -3,20 +3,21 @@ import hashlib
 import os
 import secrets
 from datetime import datetime, timedelta
+from functools import wraps
 from pathlib import Path
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
-from django.contrib.auth.decorators import user_passes_test
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Sum
-from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.feedgenerator import Rss201rev2Feed
@@ -31,21 +32,53 @@ from django.views.decorators.http import (
     require_POST,
 )
 
-from utility import config
+from service_internal.caches import get_cache, set_cache, del_cache
 
-from .analytics import flush, pending_snapshot
-from .data import PROJECTS, featured_projects, get_project
+from .analytics import flush_caches_count_to_db, pending_snapshot
+from .content import get_page_content, get_site_payload
 from .forms import CVUploadForm, FeedPostForm, LoginForm
-from .models import CVVersion, FeedPost, PageView, Visitor
+from .http import (
+    api_response,
+    htmx_no_content,
+    htmx_response,
+    is_htmx,
+    wants_json,
+)
+from .models import CVVersion, FeedPost, PageView, Project, Visitor
 
 CV_STATIC_DIR = Path(settings.BASE_DIR) / "portfolio" / "static" / "portfolio" / "files"
+CV_FALLBACK_FILENAME = "issa-abdulsalam-opeyemi-cv.pdf"
 LOGIN_ATTEMPT_LIMIT = 6
 LOGIN_ATTEMPT_WINDOW = 60 * 10
 
-staff_required = user_passes_test(
-    lambda user: user.is_active and user.is_staff,
-    login_url="portfolio:login",
-)
+
+def staff_required(view):
+    """Owner-only view that answers JSON and HTMX callers correctly."""
+
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated and user.is_active and user.is_staff:
+            return view(request, *args, **kwargs)
+
+        login_url = reverse("portfolio:login")
+        detail = "Sign in as the owner to continue."
+
+        if wants_json(request):
+            return api_response(
+                "error", detail, http_status=401, redirect=login_url
+            )
+        if is_htmx(request):
+            return htmx_response(
+                "",
+                toast={"status": "error", "detail": detail},
+                redirect=login_url,
+            )
+
+        target = f"{login_url}?{urlencode({'next': request.get_full_path()})}"
+        return redirect(target)
+
+    return wrapper
 
 
 # ---------------------------------------------------------------------------
@@ -54,32 +87,49 @@ staff_required = user_passes_test(
 
 
 def home(request):
+    published = Project.objects.filter(is_published=True).prefetch_related(
+        "technologies"
+    )
+    featured = list(published.filter(featured=True)[:3])
+    if not featured:
+        featured = list(published[:3])
+
     latest_posts = FeedPost.objects.filter(is_published=True).select_related(
         "author"
-    )[:3]
+    )[:4]
+
     return render(
         request,
         "portfolio/home.html",
         {
-            "featured_projects": featured_projects(3),
+            "featured_projects": featured,
             "latest_posts": latest_posts,
         },
     )
 
 
 def projects(request):
+    items = Project.objects.filter(is_published=True).prefetch_related(
+        "technologies"
+    )
     return render(
         request,
         "portfolio/projects.html",
-        {"projects": PROJECTS},
+        {"projects": items, "page": get_page_content("projects")},
     )
 
 
 def project_detail(request, slug):
-    project = get_project(slug)
-    if not project:
-        raise Http404("Project not found")
-    related = [item for item in PROJECTS if item["slug"] != slug][:3]
+    project = get_object_or_404(
+        Project.objects.prefetch_related("technologies"),
+        slug=slug,
+        is_published=True,
+    )
+    related = (
+        Project.objects.filter(is_published=True)
+        .exclude(pk=project.pk)
+        .prefetch_related("technologies")[:3]
+    )
     return render(
         request,
         "portfolio/project_detail.html",
@@ -87,19 +137,51 @@ def project_detail(request, slug):
     )
 
 
-def _feed_context(request, form=None):
+def _feed_page(request, page_number=None):
     posts = FeedPost.objects.filter(is_published=True).select_related("author")
     paginator = Paginator(posts, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    return paginator.get_page(page_number or request.GET.get("page"))
+
+
+def _feed_context(request, form=None, page_number=None):
+    page_obj = _feed_page(request, page_number)
     return {
         "page_obj": page_obj,
         "posts": page_obj.object_list,
         "form": form or FeedPostForm(),
-        "post_count": posts.count(),
+        "post_count": FeedPost.objects.filter(is_published=True).count(),
+        "page": get_page_content("feed"),
     }
 
 
+def _feed_list_response(request, toast=None):
+    """Replace the feed list and reset the composer after a mutation."""
+    page_obj = _feed_page(request, 1)
+    html = render_to_string(
+        "portfolio/partials/feed_list.html",
+        {
+            "page_obj": page_obj,
+            "posts": page_obj.object_list,
+            "oob": True,
+        },
+        request=request,
+    )
+    html += render_to_string(
+        "portfolio/partials/composer.html",
+        {"form": FeedPostForm(), "oob": True},
+        request=request,
+    )
+    return htmx_response(html, toast=toast)
+
+
 def feed(request):
+    if is_htmx(request) and request.GET.get("page"):
+        page_obj = _feed_page(request)
+        return render(
+            request,
+            "portfolio/partials/feed_append.html",
+            {"page_obj": page_obj, "posts": page_obj.object_list},
+        )
     return render(request, "portfolio/feed.html", _feed_context(request))
 
 
@@ -111,8 +193,27 @@ def feed_create(request):
         post = form.save(commit=False)
         post.author = request.user
         post.save()
+        if is_htmx(request):
+            return _feed_list_response(
+                request,
+                toast={"status": "success", "detail": "Post published."},
+            )
         messages.success(request, "Post published.")
         return redirect(post.get_absolute_url())
+
+    if is_htmx(request):
+        html = render_to_string(
+            "portfolio/partials/composer.html",
+            {"form": form, "oob": True},
+            request=request,
+        )
+        return htmx_response(
+            html,
+            toast={
+                "status": "error",
+                "detail": "The post could not be published. Check the fields.",
+            },
+        )
 
     messages.error(request, "The post could not be published. Check the fields below.")
     return render(
@@ -132,9 +233,35 @@ def feed_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Post updated.")
+            if is_htmx(request):
+                return htmx_response(
+                    "",
+                    toast={"status": "success", "detail": "Post updated."},
+                    redirect=post.get_absolute_url(),
+                )
             return redirect(post.get_absolute_url())
-    else:
-        form = FeedPostForm(instance=post)
+
+        if is_htmx(request):
+            html = render_to_string(
+                "portfolio/partials/feed_edit_form.html",
+                {"form": form, "post": post},
+                request=request,
+            )
+            return htmx_response(
+                html,
+                toast={
+                    "status": "error",
+                    "detail": "The post could not be saved. Check the fields.",
+                },
+            )
+        return render(
+            request,
+            "portfolio/feed_edit.html",
+            {"form": form, "post": post},
+            status=400,
+        )
+
+    form = FeedPostForm(instance=post)
     return render(
         request,
         "portfolio/feed_edit.html",
@@ -147,18 +274,24 @@ def feed_edit(request, pk):
 def feed_delete(request, pk):
     post = get_object_or_404(FeedPost, pk=pk)
     post.delete()
+    if is_htmx(request):
+        return _feed_list_response(
+            request,
+            toast={"status": "success", "detail": "Post deleted."},
+        )
     messages.success(request, "Post deleted.")
     return redirect("portfolio:feed")
 
 
 @require_GET
 def feed_rss(request):
+    site = get_site_payload()
     posts = FeedPost.objects.filter(is_published=True).select_related("author")[:50]
     feed_url = request.build_absolute_uri(reverse("portfolio:feed"))
     rss = Rss201rev2Feed(
-        title=f"{config.FULL_NAME} - Feed",
+        title=f"{site['full_name']} - Feed",
         link=feed_url,
-        description=config.FEED_DESCRIPTION,
+        description=site["feed_description"],
         language="en",
     )
     for post in posts:
@@ -179,6 +312,7 @@ def feed_rss(request):
 
 
 def _cv_meta():
+    site = get_site_payload()
     active = CVVersion.objects.filter(is_active=True).first()
     if active and active.file:
         try:
@@ -191,11 +325,11 @@ def _cv_meta():
         except (OSError, ValueError):
             pass
 
-    fallback = CV_STATIC_DIR / config.CV_FILENAME
+    fallback = CV_STATIC_DIR / CV_FALLBACK_FILENAME
     if fallback.exists():
         stat = fallback.stat()
         return {
-            "name": config.CV_DISPLAY_NAME,
+            "name": site["cv_display_name"],
             "size": stat.st_size,
             "updated": datetime.fromtimestamp(
                 stat.st_mtime, tz=timezone.get_current_timezone()
@@ -217,9 +351,10 @@ def _cv_source():
         except (OSError, ValueError):
             pass
 
-    fallback = CV_STATIC_DIR / config.CV_FILENAME
+    fallback = CV_STATIC_DIR / CV_FALLBACK_FILENAME
     if fallback.exists():
-        return {"file": open(fallback, "rb"), "name": config.CV_DISPLAY_NAME}
+        site = get_site_payload()
+        return {"file": open(fallback, "rb"), "name": site["cv_display_name"]}
     return None
 
 
@@ -229,7 +364,12 @@ def cv_view(request):
     return render(
         request,
         "portfolio/cv.html",
-        {"cv": meta, "cv_exists": bool(meta), "versions": versions},
+        {
+            "cv": meta,
+            "cv_exists": bool(meta),
+            "versions": versions,
+            "page": get_page_content("cv"),
+        },
     )
 
 
@@ -271,67 +411,96 @@ def _login_key(request):
 
 
 def _login_rate_limited(request):
-    return (cache.get(_login_key(request)) or 0) >= LOGIN_ATTEMPT_LIMIT
+    return (get_cache(_login_key(request)) or 0) >= LOGIN_ATTEMPT_LIMIT
 
 
 def _record_login_attempt(request):
     key = _login_key(request)
-    if cache.add(key, 1, timeout=LOGIN_ATTEMPT_WINDOW):
+    current = get_cache(key)
+    if not current:
+        set_cache(key, 1, timeout=LOGIN_ATTEMPT_WINDOW)
         return
     try:
-        cache.incr(key)
-    except ValueError:
-        cache.set(key, 1, timeout=LOGIN_ATTEMPT_WINDOW)
+        set_cache(key, int(current) + 1, timeout=LOGIN_ATTEMPT_WINDOW)
+    except (TypeError, ValueError):
+        set_cache(key, 1, timeout=LOGIN_ATTEMPT_WINDOW)
 
 
 def _clear_login_attempts(request):
-    cache.delete(_login_key(request))
+    del_cache(_login_key(request))
+
+
+def _safe_next(request, next_url):
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return ""
 
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     if request.user.is_authenticated and request.user.is_staff:
-        return redirect("portfolio:custom_admin")
+        destination = reverse("portfolio:custom_admin")
+        if wants_json(request):
+            return api_response("ok", "Already signed in.", redirect=destination)
+        return redirect(destination)
 
     next_url = request.GET.get("next") or request.POST.get("next") or ""
     form = LoginForm(request, data=request.POST or None)
 
     if request.method == "POST":
         if _login_rate_limited(request):
-            messages.error(
-                request, "Too many attempts. Wait a few minutes and try again."
-            )
+            detail = "Too many attempts. Wait a few minutes and try again."
+            if wants_json(request):
+                return api_response("error", detail, http_status=429)
+            messages.error(request, detail)
         elif form.is_valid():
             user = form.get_user()
             if not user.is_staff:
                 _record_login_attempt(request)
-                messages.error(request, "This account does not have owner access.")
+                detail = "This account does not have owner access."
+                if wants_json(request):
+                    return api_response("error", detail, http_status=403)
+                messages.error(request, detail)
             else:
                 auth_login(request, user)
                 _clear_login_attempts(request)
-                if next_url and url_has_allowed_host_and_scheme(
-                    next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure(),
-                ):
-                    return redirect(next_url)
-                return redirect("portfolio:custom_admin")
+                messages.success(request, "Signed in.")
+                destination = _safe_next(request, next_url) or reverse(
+                    "portfolio:custom_admin"
+                )
+                if wants_json(request):
+                    return api_response("ok", "Signed in.", redirect=destination)
+                return redirect(destination)
         else:
             _record_login_attempt(request)
-            messages.error(request, "Those credentials did not work.")
+            detail = "Those credentials did not work."
+            if wants_json(request):
+                return api_response("error", detail, http_status=400)
+            messages.error(request, detail)
 
     return render(
         request,
         "portfolio/login.html",
-        {"form": form, "next": next_url},
+        {
+            "form": form,
+            "next": next_url,
+            "page": get_page_content("login"),
+        },
     )
 
 
 @require_POST
 def logout_view(request):
     auth_logout(request)
+    destination = reverse("portfolio:home")
     messages.success(request, "Signed out.")
-    return redirect("portfolio:home")
+    if wants_json(request):
+        return api_response("ok", "Signed out.", redirect=destination)
+    return redirect(destination)
 
 
 # ---------------------------------------------------------------------------
@@ -402,6 +571,7 @@ def custom_admin_dashboard(request):
         "returning_visitors": returning_visitors,
         "posts_count": FeedPost.objects.count(),
         "cv_count": CVVersion.objects.count(),
+        "projects_count": Project.objects.count(),
         "chart": chart,
         "top_pages": top_pages,
         "recent_visitors": Visitor.objects.all()[:8],
@@ -424,16 +594,18 @@ def custom_admin_visitors(request):
         )
     paginator = Paginator(visitors, 25)
     page_obj = paginator.get_page(request.GET.get("page"))
-    return render(
-        request,
-        "portfolio/custom_admin/visitors.html",
-        {
-            "page_obj": page_obj,
-            "visitors": page_obj.object_list,
-            "q": query,
-            "total": visitors.count(),
-        },
+    context = {
+        "page_obj": page_obj,
+        "visitors": page_obj.object_list,
+        "q": query,
+        "total": visitors.count(),
+    }
+    template = (
+        "portfolio/custom_admin/partials/visitors_table.html"
+        if is_htmx(request)
+        else "portfolio/custom_admin/visitors.html"
     )
+    return render(request, template, context)
 
 
 def _csv_safe(value):
@@ -480,6 +652,10 @@ def custom_admin_visitors_export(request):
 def custom_admin_visitor_delete(request, pk):
     visitor = get_object_or_404(Visitor, pk=pk)
     visitor.delete()
+    if is_htmx(request):
+        return htmx_no_content(
+            toast={"status": "success", "detail": "Visitor record deleted."}
+        )
     messages.success(request, "Visitor record deleted.")
     return redirect("portfolio:custom_admin_visitors")
 
@@ -497,6 +673,48 @@ def custom_admin_posts(request):
 
 
 @staff_required
+@require_POST
+def custom_admin_post_delete(request, pk):
+    post = get_object_or_404(FeedPost, pk=pk)
+    post.delete()
+    if is_htmx(request):
+        return htmx_no_content(
+            toast={"status": "success", "detail": "Post deleted."}
+        )
+    messages.success(request, "Post deleted.")
+    return redirect("portfolio:custom_admin_posts")
+
+
+def _cv_context(form=None):
+    versions = CVVersion.objects.all()
+    return {
+        "form": form or CVUploadForm(),
+        "versions": versions,
+        "active_cv": versions.filter(is_active=True).first(),
+    }
+
+
+def _cv_oob_response(request, toast):
+    context = _cv_context()
+    html = render_to_string(
+        "portfolio/custom_admin/partials/cv_upload.html",
+        {"form": CVUploadForm(), "oob": True},
+        request=request,
+    )
+    html += render_to_string(
+        "portfolio/custom_admin/partials/cv_active.html",
+        {**context, "oob": True},
+        request=request,
+    )
+    html += render_to_string(
+        "portfolio/custom_admin/partials/cv_versions.html",
+        {**context, "oob": True},
+        request=request,
+    )
+    return htmx_response(html, toast=toast)
+
+
+@staff_required
 @require_http_methods(["GET", "POST"])
 def custom_admin_cv(request):
     if request.method == "POST":
@@ -511,23 +729,40 @@ def custom_admin_cv(request):
                 )[:255]
                 cv.is_active = True
                 cv.save()
+            if is_htmx(request):
+                return _cv_oob_response(
+                    request,
+                    {
+                        "status": "success",
+                        "detail": "CV uploaded and set as the active version.",
+                    },
+                )
             messages.success(request, "CV uploaded and set as the active version.")
             return redirect("portfolio:custom_admin_cv")
+
+        if is_htmx(request):
+            html = render_to_string(
+                "portfolio/custom_admin/partials/cv_upload.html",
+                {"form": form, "oob": True},
+                request=request,
+            )
+            return htmx_response(
+                html,
+                toast={
+                    "status": "error",
+                    "detail": "The CV could not be uploaded. Check the file.",
+                },
+            )
         messages.error(
             request, "The CV could not be uploaded. Check the file and try again."
         )
     else:
         form = CVUploadForm()
 
-    versions = CVVersion.objects.all()
     return render(
         request,
         "portfolio/custom_admin/cv.html",
-        {
-            "form": form,
-            "versions": versions,
-            "active_cv": versions.filter(is_active=True).first(),
-        },
+        _cv_context(form=form),
     )
 
 
@@ -536,6 +771,14 @@ def custom_admin_cv(request):
 def custom_admin_cv_activate(request, pk):
     cv = get_object_or_404(CVVersion, pk=pk)
     cv.activate()
+    if is_htmx(request):
+        return _cv_oob_response(
+            request,
+            {
+                "status": "success",
+                "detail": f"{cv.original_name} is now the active CV.",
+            },
+        )
     messages.success(request, f"{cv.original_name} is now the active CV.")
     return redirect("portfolio:custom_admin_cv")
 
@@ -553,6 +796,11 @@ def custom_admin_cv_delete(request, pk):
         if replacement:
             replacement.activate()
 
+    if is_htmx(request):
+        return _cv_oob_response(
+            request,
+            {"status": "success", "detail": f"Deleted {name}."},
+        )
     messages.success(request, f"Deleted {name}.")
     return redirect("portfolio:custom_admin_cv")
 
@@ -565,10 +813,12 @@ def custom_admin_cv_delete(request, pk):
 @csrf_exempt
 @require_POST
 def analytics_flush(request):
-    expected = settings.ANALYTICS_FLUSH_TOKEN
+    expected = getattr(settings, "SY_SECRET", "")
     if not expected:
-        return JsonResponse(
-            {"ok": False, "error": "flush_token_not_configured"}, status=503
+        return api_response(
+            "error",
+            "The analytics flush token is not configured.",
+            http_status=503,
         )
 
     supplied = request.headers.get("Authorization", "")
@@ -582,15 +832,27 @@ def analytics_flush(request):
         ).strip()
 
     if not secrets.compare_digest(expected, supplied):
-        return JsonResponse({"ok": False, "error": "unauthorized"}, status=403)
+        return api_response("error", "Unauthorized.", http_status=403)
 
     try:
-        result = flush()
+        result = flush_caches_count_to_dbs()
     except Exception:
-        return JsonResponse({"ok": False, "error": "flush_failed"}, status=500)
+        return api_response("error", "Analytics flush failed.", http_status=500)
 
-    status = 200 if result.get("ok") else 409
-    return JsonResponse(result, status=status)
+    if not result.get("ok"):
+        return api_response(
+            "error",
+            "A flush is already running.",
+            http_status=409,
+            result=result,
+        )
+
+    return api_response(
+        "ok",
+        f"Flushed {result.get('views', 0)} views.",
+        result=result,
+        ok=True,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -600,8 +862,9 @@ def analytics_flush(request):
 
 @require_GET
 def robots_txt(request):
+    domain = get_site_payload()["domain"] or request.build_absolute_uri("/")[:-1]
     content = loader.render_to_string(
-        "seo/robots.txt", {"domain": config.SITE_DOMAIN}
+        "seo/robots.txt", {"domain": domain.rstrip("/")}
     )
     return HttpResponse(content, content_type="text/plain")
 
@@ -609,9 +872,12 @@ def robots_txt(request):
 @require_GET
 def llms_txt(request):
     latest_posts = FeedPost.objects.filter(is_published=True)[:10]
+    projects = Project.objects.filter(is_published=True).prefetch_related(
+        "technologies"
+    )
     content = loader.render_to_string(
         "seo/llms.txt",
-        {"projects": PROJECTS, "latest_posts": latest_posts},
+        {"projects": projects, "latest_posts": latest_posts},
         request=request,
     )
     return HttpResponse(content, content_type="text/plain")

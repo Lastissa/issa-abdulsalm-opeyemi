@@ -1,0 +1,18 @@
+<div id="feed-pagination"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  {% if page_obj.has_next %}
+  <a class="btn btn-small feed-more"
+     href="?page={{ page_obj.next_page_number }}"
+     hx-get="?page={{ page_obj.next_page_number }}"
+     hx-target="#feed-list"
+     hx-swap="beforeend"
+     hx-indicator="#feed-more-spinner">
+    Load more notes
+  </a>
+  <span class="pagination-info">
+    Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+  </span>
+  <span class="htmx-indicator" id="feed-more-spinner">Loading...</span>
+  {% else %}
+  <span class="pagination-info">Showing all {{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }}.</span>
+  {% endif %}
+</div>

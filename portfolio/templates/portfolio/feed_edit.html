@@ -17,27 +17,7 @@
     <h1>Edit post</h1>
     <p class="lead">Changes appear on the public feed immediately.</p>
 
-    <form method="post" class="auth-form" novalidate>
-      {% csrf_token %}
-
-      <div class="field">
-        <label for="{{ form.content.id_for_label }}">Post content</label>
-        {{ form.content }}
-        {% if form.content.errors %}<div class="form-error">{{ form.content.errors }}</div>{% endif %}
-      </div>
-
-      <div class="field">
-        <label for="{{ form.image_url.id_for_label }}">Image URL <span class="muted">(optional)</span></label>
-        {{ form.image_url }}
-        {% if form.image_url.errors %}<div class="form-error">{{ form.image_url.errors }}</div>{% endif %}
-        <p class="form-help">Use a full http or https URL. The image is loaded from the source, not uploaded.</p>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn btn-primary" type="submit">Save changes</button>
-        <a class="btn btn-ghost" href="{{ post.get_absolute_url }}">Cancel</a>
-      </div>
-    </form>
+    {% include "portfolio/partials/feed_edit_form.html" with form=form post=post %}
 
     <div class="auth-note">
       Published {{ post.created_at|date:"d M Y, H:i" }}. Last updated {{ post.updated_at|date:"d M Y, H:i" }}.

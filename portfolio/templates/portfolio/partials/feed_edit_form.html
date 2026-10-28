@@ -1,0 +1,32 @@
+<form method="post"
+      action="{% url 'portfolio:feed_edit' post.pk %}"
+      id="feed-edit-form"
+      class="auth-form"
+      hx-post="{% url 'portfolio:feed_edit' post.pk %}"
+      hx-target="#feed-edit-form"
+      hx-swap="outerHTML"
+      novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-error" role="alert">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <div class="field">
+    <label for="{{ form.content.id_for_label }}">Post content</label>
+    {{ form.content }}
+    {% if form.content.errors %}<div class="form-error">{{ form.content.errors }}</div>{% endif %}
+  </div>
+
+  <div class="field">
+    <label for="{{ form.image_url.id_for_label }}">Image URL <span class="muted">(optional)</span></label>
+    {{ form.image_url }}
+    {% if form.image_url.errors %}<div class="form-error">{{ form.image_url.errors }}</div>{% endif %}
+    <p class="form-help">Use a full http or https URL. The image is loaded from the source, not uploaded.</p>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save changes</button>
+    <a class="btn btn-ghost" href="{{ post.get_absolute_url }}">Cancel</a>
+  </div>
+</form>

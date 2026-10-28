@@ -12,6 +12,14 @@ media/
 .cache/
 *.log
 
+# Local QA / preview artifacts
+.preview*
+preview_*.py
+preview_*.js
+.qa-*
+.chrome-*
+.width-test.html
+
 # Env
 .env
 .venv/

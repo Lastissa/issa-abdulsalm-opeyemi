@@ -1,0 +1,27 @@
+<form id="cv-upload"
+      method="post"
+      action="{% url 'portfolio:custom_admin_cv' %}"
+      enctype="multipart/form-data"
+      class="auth-form"
+      hx-post="{% url 'portfolio:custom_admin_cv' %}"
+      hx-encoding="multipart/form-data"
+      hx-swap="none"
+      {% if oob %}hx-swap-oob="outerHTML"{% endif %}
+      novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="form-error" role="alert">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <div class="field">
+    <label for="{{ form.file.id_for_label }}">PDF file</label>
+    {{ form.file }}
+    {% if form.file.errors %}<div class="form-error">{{ form.file.errors }}</div>{% endif %}
+    <p class="form-help">PDF only, up to 10 MB. A new upload becomes the active version immediately.</p>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Upload and activate</button>
+  </div>
+</form>

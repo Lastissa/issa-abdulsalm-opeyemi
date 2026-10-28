@@ -1,0 +1,67 @@
+<section class="panel" id="cv-versions" aria-labelledby="versions-heading"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  <div class="panel-head">
+    <div class="panel-title" id="versions-heading">All versions</div>
+    <span class="panel-subtitle">{{ versions|length }} file{{ versions|length|pluralize }}</span>
+  </div>
+  <div class="panel-body panel-body-flush">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">File</th>
+            <th scope="col">Size</th>
+            <th scope="col">Uploaded</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for version in versions %}
+          <tr>
+            <td class="strong" data-label="File">{{ version.original_name }}</td>
+            <td data-label="Size">{{ version.size_display }}</td>
+            <td data-label="Uploaded">{{ version.uploaded_at|date:"d M Y, H:i" }}</td>
+            <td data-label="Status">
+              {% if version.is_active %}
+              <span class="badge badge-success">Active</span>
+              {% else %}
+              <span class="badge">Archived</span>
+              {% endif %}
+            </td>
+            <td data-label="Actions">
+              <div class="row-actions">
+                {% if not version.is_active %}
+                <form method="post"
+                      action="{% url 'portfolio:custom_admin_cv_activate' version.pk %}"
+                      hx-post="{% url 'portfolio:custom_admin_cv_activate' version.pk %}"
+                      hx-swap="none">
+                  {% csrf_token %}
+                  <button class="inline-button" type="submit">Set active</button>
+                </form>
+                {% endif %}
+                <form method="post"
+                      action="{% url 'portfolio:custom_admin_cv_delete' version.pk %}"
+                      hx-post="{% url 'portfolio:custom_admin_cv_delete' version.pk %}"
+                      hx-swap="none"
+                      hx-confirm="Delete this CV version permanently?">
+                  {% csrf_token %}
+                  <button class="inline-button danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <h2>No uploaded versions</h2>
+                <p>Use the form above to add the first PDF.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

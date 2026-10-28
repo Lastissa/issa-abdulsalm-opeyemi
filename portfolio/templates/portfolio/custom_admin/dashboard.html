@@ -37,7 +37,7 @@
   <div class="stat-card">
     <div class="stat-label">Published posts</div>
     <div class="stat-value">{{ posts_count|intcomma }}</div>
-    <div class="stat-hint">{{ cv_count }} CV version{{ cv_count|pluralize }}</div>
+    <div class="stat-hint">{{ projects_count }} project{{ projects_count|pluralize }} &middot; {{ cv_count }} CV version{{ cv_count|pluralize }}</div>
   </div>
 </div>
 
@@ -96,6 +96,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>
           </span>
           <span><strong>View public feed</strong><span>See what visitors see</span></span>
+        </a>
+        <a class="quick-action" href="/admin/portfolio/">
+          <span class="quick-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          </span>
+          <span><strong>Edit site content</strong><span>Projects, skills, copy, socials</span></span>
         </a>
       </div>
     </div>

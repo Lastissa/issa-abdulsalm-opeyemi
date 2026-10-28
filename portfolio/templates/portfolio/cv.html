@@ -1,9 +1,9 @@
 {% extends "base/base_template.html" %}
 
 {% block meta_title %}CV | {{ site.full_name }}{% endblock %}
-{% block meta_description %}View or download the CV of {{ site.full_name }}, a {{ site.role_title }} working with Django, Django REST Framework, PostgreSQL, Flutter, and Go.{% endblock %}
+{% block meta_description %}{{ page.meta_description }}{% endblock %}
 {% block og_title %}CV | {{ site.full_name }}{% endblock %}
-{% block og_description %}View or download the CV of {{ site.full_name }}.{% endblock %}
+{% block og_description %}{{ page.og_description }}{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -13,10 +13,14 @@
   "url": "{{ site.domain }}{% url 'portfolio:cv' %}",
   "about": {
     "@type": "Person",
-    "name": "{{ site.full_name }}",
-    "jobTitle": "{{ site.role_title }}",
+    "name": "{{ site.full_name|escapejs }}",
+    "jobTitle": "{{ site.role_title|escapejs }}",
     "url": "{{ site.domain }}/",
-    "address": {"@type": "PostalAddress", "addressLocality": "Ilorin", "addressCountry": "NG"}
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ site.city|escapejs }}",
+      "addressCountry": "{{ site.country_code|escapejs }}"
+    }
   }
 }
 </script>
@@ -26,9 +30,9 @@
 <div class="container cv-page">
   <header class="cv-header">
     <div>
-      <p class="eyebrow">Curriculum vitae</p>
-      <h1>{{ site.full_name }}</h1>
-      <p class="lead">View it below, download the PDF, or open it in a new tab.</p>
+      <p class="eyebrow">{{ page.eyebrow }}</p>
+      <h1>{{ page.heading|default:site.full_name }}</h1>
+      <p class="lead">{{ page.intro }}</p>
     </div>
     <div class="cv-actions">
       {% if cv_exists %}
@@ -81,7 +85,7 @@
   {% endif %}
 
   {% if versions %}
-  <section class="section-tight" aria-labelledby="versions-heading">
+  <section class="section-tight" aria-labelledby="versions-heading" id="cv-versions">
     <div class="section-header">
       <p class="eyebrow">Owner tools</p>
       <h2 id="versions-heading">CV versions</h2>
@@ -98,12 +102,19 @@
           {% if version.is_active %}
           <span class="badge badge-success">Active</span>
           {% else %}
-          <form method="post" action="{% url 'portfolio:custom_admin_cv_activate' version.pk %}">
+          <form method="post"
+                action="{% url 'portfolio:custom_admin_cv_activate' version.pk %}"
+                hx-post="{% url 'portfolio:custom_admin_cv_activate' version.pk %}"
+                hx-swap="none">
             {% csrf_token %}
             <button class="inline-button" type="submit">Set active</button>
           </form>
           {% endif %}
-          <form method="post" action="{% url 'portfolio:custom_admin_cv_delete' version.pk %}" data-confirm="Delete this CV version?">
+          <form method="post"
+                action="{% url 'portfolio:custom_admin_cv_delete' version.pk %}"
+                hx-post="{% url 'portfolio:custom_admin_cv_delete' version.pk %}"
+                hx-swap="none"
+                hx-confirm="Delete this CV version?">
             {% csrf_token %}
             <button class="inline-button danger" type="submit">Delete</button>
           </form>

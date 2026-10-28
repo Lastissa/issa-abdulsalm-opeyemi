@@ -1,7 +1,7 @@
-{% load static humanize %}
+{% load humanize %}
 <article class="post-card" id="post-{{ post.pk }}">
   <div class="post-head">
-    <img class="avatar" src="{% static 'portfolio/images/profile.jpg' %}" alt="" width="42" height="42">
+    <img class="avatar" src="{{ site.avatar }}" alt="" width="42" height="42">
     <div class="post-author">
       <div class="post-author-name">
         {{ post.author.get_full_name|default:post.author.username }}
@@ -18,7 +18,11 @@
       </summary>
       <div class="post-menu-panel">
         <a href="{% url 'portfolio:feed_edit' post.pk %}">Edit post</a>
-        <form method="post" action="{% url 'portfolio:feed_delete' post.pk %}" data-confirm="Delete this post permanently?">
+        <form method="post"
+              action="{% url 'portfolio:feed_delete' post.pk %}"
+              hx-post="{% url 'portfolio:feed_delete' post.pk %}"
+              hx-swap="none"
+              hx-confirm="Delete this post permanently?">
           {% csrf_token %}
           <button class="danger" type="submit">Delete post</button>
         </form>

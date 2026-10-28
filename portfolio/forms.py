@@ -98,6 +98,14 @@ class CVUploadForm(forms.ModelForm):
             raise ValidationError("The CV must be a PDF file.")
         if upload.content_type not in ("application/pdf", "application/x-pdf"):
             raise ValidationError("The file does not look like a valid PDF.")
+        try:
+            upload.seek(0)
+            header = upload.read(5)
+            upload.seek(0)
+        except (OSError, ValueError):
+            header = b""
+        if not header.startswith(b"%PDF-"):
+            raise ValidationError("The file does not look like a valid PDF.")
         if upload.size > 10 * 1024 * 1024:
             raise ValidationError("Keep the PDF under 10 MB.")
         return upload

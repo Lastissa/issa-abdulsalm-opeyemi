@@ -49,6 +49,9 @@ class PageViewMiddleware:
     def _should_track(request, response):
         if request.method != "GET":
             return False
+        # HTMX fragments are parts of a page, not separate page views.
+        if request.META.get("HTTP_HX_REQUEST") == "true":
+            return False
         if response.status_code >= 400:
             return False
         if getattr(response, "streaming", False):

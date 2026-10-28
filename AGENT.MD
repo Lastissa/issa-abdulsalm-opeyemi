@@ -64,3 +64,4 @@ MOST IMPORTANTLY
 -   "serves as a testament to"
 -   "underscore the importance of"
 -   "i hope this helps"
+-   "avoid the use of "xxxxx, never xxxx""

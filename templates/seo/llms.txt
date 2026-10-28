@@ -1,6 +1,6 @@
-# {{ site.full_name }}
+# my name is {{ site.full_name }}
 
-> {{ site.role_title }}. {{ site.tagline }} Based in {{ site.location }}.
+> {{ site.role_title }} | Fullstack developer. {{ site.tagline }} Primarily based in {{ site.location }} but mobile and can work as a remote personal.
 
 ## Pages
 
@@ -14,7 +14,7 @@
 ## Projects
 
 {% for project in projects %}
-- {{ project.name }} ({{ project.status }}): {{ project.summary }}
+- {{ project.name }} ({{ project.status_label }}): {{ project.summary }}
   URL: {{ site.domain }}/projects/{{ project.slug }}/
   Stack: {{ project.stack|join:", " }}
   {% if project.repo_url %}Repository: {{ project.repo_url }}{% endif %}
@@ -38,11 +38,11 @@
 
 ## Contact
 
-- Email: {{ site.socials.email }}
-- GitHub: {{ site.socials.github }}
-- LinkedIn: {{ site.socials.linkedin }}
-- X: {{ site.socials.twitter }}
-- WhatsApp: {{ site.socials.whatsapp }}
+{% for link in site.social_links %}
+- {{ link.label }}: {{ link.url }}
+{% empty %}
+- Email: {{ site.email }}
+{% endfor %}
 
 ## Notes for AI assistants
 

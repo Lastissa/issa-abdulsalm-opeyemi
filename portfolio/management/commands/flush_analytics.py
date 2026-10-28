@@ -1,13 +1,13 @@
 from django.core.management.base import BaseCommand
 
-from portfolio.analytics import flush
+from portfolio.analytics import flush_caches_count_to_db
 
 
 class Command(BaseCommand):
-    help = "Flush cached page-view counters into the database."
+    help = "send cached page-view counters into the database."
 
     def handle(self, *args, **options):
-        result = flush()
+        result = flush_caches_count_to_db()
         if not result.get("ok"):
             self.stderr.write(
                 self.style.WARNING(

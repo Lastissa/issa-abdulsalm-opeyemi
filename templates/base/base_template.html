@@ -7,30 +7,45 @@
   (function () {
     try {
       var stored = localStorage.getItem("theme");
-      var theme = stored === "light" || stored === "dark"
-        ? stored
+      var fallback = "{{ site.default_theme|default:'system' }}";
+      var preferred = fallback === "light" || fallback === "dark"
+        ? fallback
         : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      var theme = stored === "light" || stored === "dark" ? stored : preferred;
       document.documentElement.setAttribute("data-theme", theme);
     } catch (error) {
       document.documentElement.setAttribute("data-theme", "light");
     }
   })();
   </script>
+  <script>
+  (function () {
+    try {
+      var seen = sessionStorage.getItem("splashSeen");
+      if (!seen) {
+        document.documentElement.classList.add("is-loading");
+      }
+    } catch (error) {
+      /* ignore */
+    }
+  })();
+  </script>
 
   <title>{% block meta_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ site.default_description }}{% endblock %}">
+  <meta name="keywords" content="{{ site.keywords }}">
   <meta name="author" content="{{ site.full_name }}">
   <meta name="robots" content="{% block robots %}index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1{% endblock %}">
   <link rel="canonical" href="{% block canonical_url %}{{ site.canonical_url }}{% endblock %}">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#f7f9fc" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#070b10" media="(prefers-color-scheme: dark)">
 
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:site_name" content="{{ site.title }}">
   <meta property="og:title" content="{% block og_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
   <meta property="og:description" content="{% block og_description %}{{ site.default_description }}{% endblock %}">
-  <meta property="og:image" content="{% block og_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ site.avatar }}{% endblock %}">
   <meta property="og:image:alt" content="Portrait of {{ site.full_name }}">
   <meta property="og:url" content="{{ site.canonical_url }}">
   <meta property="og:locale" content="en_NG">
@@ -38,7 +53,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{% block twitter_title %}{{ site.title }} | {{ site.role_title }}{% endblock %}">
   <meta name="twitter:description" content="{% block twitter_description %}{{ site.default_description }}{% endblock %}">
-  <meta name="twitter:image" content="{% block twitter_image %}{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}{{ site.avatar }}{% endblock %}">
 
   {% block structured_data %}{% endblock %}
 
@@ -46,28 +61,79 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 
-  <style>{% include "base/critical.css" %}</style>
-  <link rel="preload" href="{% static 'portfolio/css/styles.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="{% static 'portfolio/css/styles.css' %}"></noscript>
+  <link rel="stylesheet" href="{% static 'portfolio/css/base.css' %}">
 
-  <link rel="icon" type="image/png" href="{% static 'portfolio/images/favicon.png' %}">
-  <link rel="apple-touch-icon" href="{% static 'portfolio/images/favicon.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'portfolio/images/favicon.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'portfolio/images/favicon.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'portfolio/images/favicon.png' %}">
   <link rel="manifest" href="{% static 'portfolio/site.webmanifest' %}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.short_name }} feed" href="{% url 'portfolio:feed_rss' %}">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
-<a class="skip-link" href="#main-content">Skip to content</a>
+<body class="{% block body_class %}{% endblock %}"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+      data-toast-position="{{ site.toast_position|default:'top' }}">
+<div class="page-transition" id="page-transition" aria-hidden="true">
+  <div class="page-transition-curtain"></div>
+</div>
+<div class="splash" id="splash" aria-hidden="true">
+  <div class="splash-slash" aria-hidden="true">
+    <span class="splash-slash-panel splash-slash-left"></span>
+    <span class="splash-slash-panel splash-slash-right"></span>
+  </div>
+  <div class="splash-content">
+    <span class="splash-mark">{{ site.initials }}</span>
+    <span class="splash-name">{{ site.full_name }}</span>
+  </div>
+</div>
+<script>
+(function () {
+  try {
+    if (!sessionStorage.getItem("splashSeen")) {
+      window.setTimeout(function () {
+        var splash = document.getElementById("splash");
+        if (splash) {
+          splash.classList.add("is-gone");
+          window.setTimeout(function () {
+            document.documentElement.classList.remove("is-loading");
+            window.setTimeout(function () {
+              if (splash && splash.parentNode) {
+                splash.parentNode.removeChild(splash);
+              }
+            }, 900);
+          }, 150);
+        } else {
+          document.documentElement.classList.remove("is-loading");
+        }
+        try {
+          sessionStorage.setItem("splashSeen", "1");
+        } catch (error) {}
+      }, 700);
+    } else {
+      document.documentElement.classList.remove("is-loading");
+      var splash = document.getElementById("splash");
+      if (splash && splash.parentNode) {
+        splash.parentNode.removeChild(splash);
+      }
+    }
+  } catch (error) {
+    document.documentElement.classList.remove("is-loading");
+    var splash = document.getElementById("splash");
+    if (splash && splash.parentNode) {
+      splash.parentNode.removeChild(splash);
+    }
+  }
+})();
+</script>
 
 {% block site_header %}
 <header class="site-header">
   <div class="container header-inner">
     <a class="brand" href="{% url 'portfolio:home' %}" aria-label="{{ site.full_name }} home">
-      <span class="brand-mark" aria-hidden="true">IA</span>
+      {% comment %} <span class="brand-mark" aria-hidden="true">{{ site.initials }}</span> {% endcomment %}
       <span class="brand-copy">
         <strong>{{ site.short_name }}</strong>
-        <small>{{ site.role_title }}</small>
-      </span>
+home-portrait      </span>
     </a>
 
     <div class="header-right">
@@ -79,8 +145,6 @@
           <li><a href="{% url 'portfolio:cv' %}" {% if request.resolver_match.url_name == 'cv' %}aria-current="page"{% endif %}>CV</a></li>
           {% if request.user.is_staff %}
           <li class="nav-mobile-only"><a href="{% url 'portfolio:custom_admin' %}">Dashboard</a></li>
-          {% else %}
-          <li class="nav-mobile-only"><a href="{% url 'portfolio:login' %}">Login</a></li>
           {% endif %}
         </ul>
       </nav>
@@ -93,8 +157,6 @@
 
         {% if request.user.is_staff %}
           <a class="btn btn-small btn-ghost header-admin-link" href="{% url 'portfolio:custom_admin' %}">Dashboard</a>
-        {% else %}
-          <a class="btn btn-small btn-ghost header-admin-link" href="{% url 'portfolio:login' %}">Login</a>
         {% endif %}
 
         <button class="icon-button nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu" data-nav-toggle>
@@ -107,15 +169,42 @@
 {% endblock site_header %}
 
 {% if messages %}
-<div class="container messages" aria-live="polite">
+<div class="container messages" data-toast-source aria-live="polite">
   {% for message in messages %}
-  <div class="message message-{{ message.tags|default:'info' }}" role="status">
+  <div class="message message-{{ message.tags|default:'info' }}"
+       role="status"
+       data-toast-status="{{ message.tags|default:'info' }}"
+       data-toast-detail="{{ message }}">
     <span>{{ message }}</span>
     <button type="button" class="message-close" aria-label="Dismiss message" data-dismiss>&times;</button>
   </div>
   {% endfor %}
 </div>
 {% endif %}
+
+<div class="toast-region toast-region-{{ site.toast_position|default:'top' }}"
+     id="toast-region"
+     x-data="toastRegion"
+     @toast.window="push($event.detail)"
+     aria-live="polite"
+     aria-atomic="false">
+  <template x-for="toast in toasts" :key="toast.id">
+    <div class="toast" :class="'toast-' + toast.status"
+         role="status"
+         @mouseenter="pause(toast.id)"
+         @mouseleave="resume(toast.id)"
+         @focusin="pause(toast.id)"
+         @focusout="resume(toast.id)">
+      <span class="toast-mark" aria-hidden="true"></span>
+      <div class="toast-copy">
+        <strong class="toast-title" x-text="toast.title"></strong>
+        <p class="toast-detail" x-text="toast.detail"></p>
+      </div>
+      <button class="toast-close" type="button" @click="dismiss(toast.id)" aria-label="Dismiss notification">&times;</button>
+      <span class="toast-progress" aria-hidden="true"></span>
+    </div>
+  </template>
+</div>
 
 <main id="main-content">
   {% block content %}{% endblock %}
@@ -126,13 +215,14 @@
   <div class="container footer-grid">
     <div class="footer-brand">
       <a class="brand" href="{% url 'portfolio:home' %}">
-        <span class="brand-mark" aria-hidden="true">IA</span>
+        <span class="brand-mark" aria-hidden="true">{{ site.initials }}</span>
         <span class="brand-copy">
           <strong>{{ site.short_name }}</strong>
           <small>{{ site.location }}</small>
         </span>
       </a>
       <p>{{ site.tagline }}</p>
+      <p class="footer-note">{{ site.footer_note }}</p>
     </div>
 
     <div class="footer-col">
@@ -148,11 +238,9 @@
     <div class="footer-col">
       <h2>Elsewhere</h2>
       <ul>
-        {% if site.socials.github %}<li><a href="{{ site.socials.github }}" target="_blank" rel="noopener noreferrer">GitHub</a></li>{% endif %}
-        {% if site.socials.linkedin %}<li><a href="{{ site.socials.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>{% endif %}
-        {% if site.socials.twitter %}<li><a href="{{ site.socials.twitter }}" target="_blank" rel="noopener noreferrer">X / Twitter</a></li>{% endif %}
-        {% if site.socials.whatsapp %}<li><a href="{{ site.socials.whatsapp }}" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>{% endif %}
-        {% if site.socials.email %}<li><a href="mailto:{{ site.socials.email }}">Email</a></li>{% endif %}
+        {% for link in site.social_links %}
+        <li><a href="{{ link.url }}"{% if link.platform != 'email' %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a></li>
+        {% endfor %}
       </ul>
     </div>
   </div>
@@ -162,7 +250,9 @@
     <div class="footer-bottom-links">
       <a href="{% url 'portfolio:feed_rss' %}">RSS</a>
       {% if request.user.is_staff %}
-        <form method="post" action="{% url 'portfolio:logout' %}">
+        <form method="post" action="{% url 'portfolio:logout' %}"
+              x-data="asyncForm({ redirect: '{% url 'portfolio:home' %}' })"
+              @submit.prevent="submit($event)">
           {% csrf_token %}
           <button class="link-button" type="submit">Sign out</button>
         </form>
@@ -174,7 +264,40 @@
 </footer>
 {% endblock site_footer %}
 
+<script src="{% static 'portfolio/vendor/htmx.min.js' %}" defer></script>
 <script src="{% static 'portfolio/js/main.js' %}" defer></script>
+<script src="{% static 'portfolio/vendor/alpine.min.js' %}" defer></script>
+<script>
+(function () {
+  var curtain = document.getElementById("page-transition");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!curtain || reduced) return;
+  document.documentElement.classList.add("page-enter");
+  window.setTimeout(function () {
+    document.documentElement.classList.remove("page-enter");
+  }, 520);
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest("a[href]");
+    if (!link) return;
+    if (link.target && link.target !== "_self") return;
+    if (link.hasAttribute("data-no-transition")) return;
+    if (link.href.indexOf("mailto:") === 0 || link.href.indexOf("tel:") === 0) return;
+    if (link.href.indexOf("#") === 0) return;
+    try {
+      var url = new URL(link.href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.hash) return;
+      event.preventDefault();
+      document.documentElement.classList.add("page-leave");
+      window.setTimeout(function () {
+        window.location.href = link.href;
+      }, 420);
+    } catch (error) {
+      return;
+    }
+  }, true);
+})();
+</script>
 {% block extra_body %}{% endblock %}
 </body>
 </html>

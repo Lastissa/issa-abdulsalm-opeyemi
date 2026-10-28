@@ -1,8 +1,8 @@
 {% extends "base/base_template.html" %}
-{% load static humanize %}
 
 {% block meta_title %}{{ site.full_name }} | {{ site.role_title }}{% endblock %}
 {% block meta_description %}{{ site.default_description }}{% endblock %}
+{% block body_class %}home-page{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -12,32 +12,31 @@
     {
       "@type": "Person",
       "@id": "{{ site.domain }}/#person",
-      "name": "{{ site.full_name }}",
+      "name": "{{ site.full_name|escapejs }}",
       "url": "{{ site.domain }}/",
-      "jobTitle": "{{ site.role_title }}",
+      "jobTitle": "{{ site.role_title|escapejs }}",
       "description": "{{ site.default_description|escapejs }}",
-      "image": "{{ site.domain }}{% static 'portfolio/images/profile.jpg' %}",
+      "image": "{{ site.avatar }}",
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Ilorin",
-        "addressCountry": "NG"
+        "addressLocality": "{{ site.city|escapejs }}",
+        "addressCountry": "{{ site.country_code|escapejs }}"
       },
-      "knowsAbout": ["Python", "Django", "Django REST Framework", "PostgreSQL", "SQL", "Flutter", "Go", "Redis"],
-      "sameAs": [
-        {% if site.socials.github %}"{{ site.socials.github }}"{% if site.socials.linkedin or site.socials.twitter %},{% endif %}{% endif %}
-        {% if site.socials.linkedin %}"{{ site.socials.linkedin }}"{% if site.socials.twitter %},{% endif %}{% endif %}
-        {% if site.socials.twitter %}"{{ site.socials.twitter }}"{% endif %}
-      ],
+      "knowsAbout": [{% for skill in site.flat_skills %}"{{ skill|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+      "sameAs": [{% for link in site.social_links %}"{{ link.url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+      {% if site.education %}
       "alumniOf": {
         "@type": "CollegeOrUniversity",
-        "name": "Federal University of Ilorin"
-      }
+        "name": "{{ site.education.0.institution|escapejs }}"
+      },
+      {% endif %}
+      "email": "{{ site.email|escapejs }}"
     },
     {
       "@type": "WebSite",
       "@id": "{{ site.domain }}/#website",
       "url": "{{ site.domain }}/",
-      "name": "{{ site.full_name }}",
+      "name": "{{ site.full_name|escapejs }}",
       "inLanguage": "en",
       "publisher": {"@id": "{{ site.domain }}/#person"}
     }
@@ -47,211 +46,224 @@
 {% endblock %}
 
 {% block content %}
-<section class="container hero hero-home" aria-labelledby="hero-heading">
-  <div class="hero-copy">
-    <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>{{ site.role_title }}</p>
-    <h1 id="hero-heading">I build backends that stay <span class="accent-text">maintainable</span>.</h1>
-    <p class="lead">
-      I am {{ site.full_name }}. I work with Django, Django REST Framework,
-      PostgreSQL, Flutter, and Go. Based in {{ site.location }}.
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">See projects</a>
-      <a class="btn" href="{% url 'portfolio:feed' %}">Read the feed</a>
-      <a class="btn btn-ghost" href="{% url 'portfolio:cv_download' %}">Download CV</a>
-    </div>
-    <ul class="hero-meta">
-      <li><span>Focus</span> Backend systems, APIs, and data-heavy products</li>
-      <li><span>Stack</span> Django, DRF, PostgreSQL, Flutter, Go</li>
-      <li><span>Based in</span> {{ site.location }}</li>
-    </ul>
-  </div>
+<section class="home-hero" aria-labelledby="hero-heading">
+  <div class="container home-hero-grid">
+    <div class="home-hero-copy">
 
-  <div class="hero-visual">
-    <div class="profile-card">
-      <div class="profile-card-top">
-        <img class="profile-card-avatar" src="{% static 'portfolio/images/profile.jpg' %}" alt="Portrait of {{ site.full_name }}" width="72" height="72" loading="eager">
+      <h1 class="home-title" id="hero-heading">
+        <span class="home-title-lead">I'm</span>
+        <span class="home-title-name">{{ site.full_name }}<span class="home-title-dot">.</span></span>
+      </h1>
+
+      <p class="home-subtitle">I build platforms that stay <span>maintainable</span>.</p>
+
+      <p class="home-roles">
+        <span>SaaS</span>
+        <span>Backend System</span>
+        <span>Mobile Application</span>
+        <span>Web Application</span>
+      </p>
+
+      <p class="home-lead">" My purpose is to strategically integrate advanced software engineering directly into the core of institutions across Western Africa."</p>
+
+      <div class="home-actions">
+        <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">Explore my work</a>
+        <a class="btn" href="{% url 'portfolio:feed' %}">Read the build log</a>
+        <a class="btn btn-ghost" href="{% url 'portfolio:cv_download' %}">Download CV</a>
+      </div>
+
+      <dl class="home-stats">
         <div>
-          <strong>{{ site.full_name }}</strong>
-          <span>{{ site.role_title }}</span>
+          <dt>Years building</dt>
+          <dd>{{ site.years_experience }}+</dd>
         </div>
-      </div>
+        <div>
+          <dt>Projects shipped</dt>
+          <dd>{{ site.projects_delivered }}</dd>
+        </div>
+        <div>
+          <dt>Build notes</dt>
+          <dd>{{ site.post_count }}</dd>
+        </div>
+      </dl>
+    </div>
 
-      <div class="profile-facts">
-        <div class="fact">
-          <span class="fact-label">Education</span>
-          <span class="fact-value">B.Sc. Computer Science, in progress</span>
-        </div>
-        <div class="fact">
-          <span class="fact-label">University</span>
-          <span class="fact-value">Federal University of Ilorin</span>
-        </div>
-        <div class="fact">
-          <span class="fact-label">Current</span>
-          <span class="fact-value">Django, DRF, PostgreSQL, Go</span>
-        </div>
-        <div class="fact">
-          <span class="fact-label">Mobile</span>
-          <span class="fact-value">Flutter for Android and desktop</span>
-        </div>
+    <div class="home-hero-visual">
+      <span class="home-visual-ghost" aria-hidden="true">{{ site.initials }}</span>
+      <div class="home-portrait-wrap">
+        <span class="home-portrait-orbit" aria-hidden="true"></span>
+        <figure class="home-portrait">
+          <img src="{{ site.avatar }}" alt="Portrait of {{ site.full_name }}" width="480" height="480" loading="eager">
+        </figure>
       </div>
+      <div class="home-hero-card">
+        <span class="home-card-label">Stack</span>
+        <strong>Django, DRF, PostgreSQL, Flutter, Go</strong>
+      </div>
+      <p class="home-hero-note">Available for backend work</p>
+    </div>
+  </div>
+</section>
 
-      <div class="now-card">
-        <h2>Right now</h2>
-        <ul class="now-list">
-          <li><span class="now-dot" aria-hidden="true"></span>Building and hardening Django backends</li>
-          <li><span class="now-dot" aria-hidden="true"></span>Going deeper into Go for concurrency</li>
-          <li><span class="now-dot" aria-hidden="true"></span>Documenting the work on the feed</li>
+
+
+<section class="landing-section landing-work" aria-labelledby="work-heading">
+  <div class="container">
+    <header class="landing-section-head landing-section-head-inline">
+      <div>
+        <p class="eyebrow">Selected work</p>
+        <h2 id="work-heading">Selected work</h2>
+      </div>
+      <a class="landing-section-link" href="{% url 'portfolio:projects' %}">All projects <span aria-hidden="true">&rarr;</span></a>
+    </header>
+
+    <ol class="landing-work-list">
+      {% for project in featured_projects %}
+      <li class="landing-work-item">
+        <a href="{{ project.get_absolute_url }}">
+          <span class="landing-work-num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+          <span class="landing-work-main">
+            <span class="landing-work-title">{{ project.name }}</span>
+            <span class="landing-work-summary">{{ project.summary }}</span>
+            <span class="landing-work-stack">
+              {% for tech in project.stack|slice:":4" %}{{ tech }}{% if not forloop.last %}<i aria-hidden="true">&middot;</i>{% endif %}{% endfor %}
+            </span>
+          </span>
+          <span class="landing-work-side">
+            <span class="status status-{{ project.status_class }}">{{ project.status_label }}</span>
+            <span class="landing-work-arrow" aria-hidden="true">&#8599;</span>
+          </span>
+        </a>
+      </li>
+      {% empty %}
+      <li class="landing-work-empty">
+        <p>No case studies are published yet. Add the first project in the owner dashboard.</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="landing-section landing-stack" aria-labelledby="stack-heading">
+  <div class="container">
+    <header class="landing-section-head">
+      <span class="landing-index" aria-hidden="true">02</span>
+      <div>
+        <p class="eyebrow">The toolkit</p>
+        <h2 id="stack-heading">What I reach for.</h2>
+      </div>
+      <p class="landing-section-note">Django, DRF, PostgreSQL, Flutter, Go</p>
+    </header>
+
+    <div class="landing-stack-grid">
+      {% for group in site.skill_groups %}
+      <article class="landing-stack-group">
+        <span class="landing-stack-num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+        <h3>{{ group.name }}</h3>
+        <ul>
+          {% for item in group.items %}<li>{{ item }}</li>{% endfor %}
         </ul>
-      </div>
+      </article>
+      {% empty %}
+      <p class="muted">Add skill groups in the owner dashboard.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<section class="section" aria-labelledby="work-heading">
-  <div class="container">
-  <div class="section-header-row">
-    <div class="section-header">
-      <p class="eyebrow">Selected work</p>
-      <h2 id="work-heading">Things I have built</h2>
-      <p>Projects built to test a tool, solve a problem, or push a system further than its default behaviour.</p>
-    </div>
-    <a class="text-link" href="{% url 'portfolio:projects' %}">All projects &rarr;</a>
-  </div>
+<section class="landing-section landing-log" aria-labelledby="log-heading">
+  <div class="container landing-log-grid">
+    <header class="landing-log-head">
+      <span class="landing-index" aria-hidden="true">03</span>
+      <p class="eyebrow">Build log</p>
+      <h2 id="log-heading">Notes from the work.</h2>
+      <p>Short updates on what I'm building, learning, and shipping.</p>
+      <a class="btn" href="{% url 'portfolio:feed' %}">Open the feed</a>
+    </header>
 
-  <div class="projects-grid">
-    {% for project in featured_projects %}
-    <article class="project-card">
-      <div class="project-card-head">
-        <h2>{{ project.name }}</h2>
-        <span class="status status-{{ project.status_class }}">{{ project.status }}</span>
-      </div>
-      <p>{{ project.summary }}</p>
-      <ul class="tag-list">
-        {% for tech in project.stack|slice:":4" %}<li class="tag">{{ tech }}</li>{% endfor %}
-      </ul>
-      <div class="project-card-footer">
-        <div class="project-card-links">
-          <a class="text-link" href="{% url 'portfolio:project_detail' project.slug %}">Case study &rarr;</a>
-        </div>
-        {% if project.live_url %}
-        <a class="text-link" href="{{ project.live_url }}" target="_blank" rel="noopener noreferrer">{{ project.live_label }} &rarr;</a>
-        {% endif %}
-      </div>
-    </article>
-    {% endfor %}
-  </div>
+    <ol class="landing-log-list">
+      {% for post in latest_posts %}
+      <li>
+        <a href="{{ post.get_absolute_url }}">
+          <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"d M Y" }}</time>
+          <span>{{ post.content|truncatewords:26 }}</span>
+          <i aria-hidden="true">&rarr;</i>
+        </a>
+      </li>
+      {% empty %}
+      <li class="landing-log-empty">
+        <p>No notes published yet. The first one is coming.</p>
+      </li>
+      {% endfor %}
+    </ol>
   </div>
 </section>
 
-{% if latest_posts %}
-<section class="section" aria-labelledby="latest-heading">
+<section class="landing-section landing-principles" aria-labelledby="principles-heading">
   <div class="container">
-  <div class="section-header-row">
-    <div class="section-header">
-      <p class="eyebrow">From the feed</p>
-      <h2 id="latest-heading">Recent notes</h2>
-      <p>Short updates on what I am building, learning, and shipping.</p>
-    </div>
-    <a class="text-link" href="{% url 'portfolio:feed' %}">All posts &rarr;</a>
-  </div>
-
-  <div class="card-grid card-grid-3">
-    {% for post in latest_posts %}
-    <article class="card">
-      <p class="card-meta">{{ post.created_at|naturaltime }}</p>
-      <p>{{ post.content|truncatewords:28 }}</p>
-      <div class="card-footer">
-        <a class="text-link" href="{{ post.get_absolute_url }}">Open post &rarr;</a>
+    <header class="landing-section-head">
+      <span class="landing-index" aria-hidden="true">04</span>
+      <div>
+        <p class="eyebrow">Approach</p>
+        <h2 id="principles-heading">Pragmatic, clear, and testable.</h2>
       </div>
-    </article>
-    {% endfor %}
-  </div>
-  </div>
-</section>
-{% endif %}
+      <p class="landing-section-note">I keep systems simple, document decisions, and ship in small steps. Clarity beats cleverness when it comes to long-term maintenance.</p>
+    </header>
 
-<section class="section" aria-labelledby="about-heading">
-  <div class="container">
-  <div class="section-header">
-    <p class="eyebrow">About</p>
-    <h2 id="about-heading">How I work</h2>
-  </div>
-  <div class="card-grid card-grid-2">
-    <div class="card">
-      <h3>Research before building</h3>
-      <p>
-        A product without findings is a product waiting to fail. I start by
-        understanding the data, the constraints, and the failure cases, then
-        choose the tool that fits the job.
-      </p>
+    <div class="landing-principles-grid">
+      {% for principle in site.principles %}
+      <article class="landing-principle">
+        <span class="landing-principle-num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+        <h3>{{ principle.title }}</h3>
+        <p>{{ principle.body }}</p>
+      </article>
+      {% endfor %}
     </div>
-    <div class="card">
-      <h3>Maintainability over cleverness</h3>
-      <p>
-        Most of what I ship runs on Django and DRF because they are data-heavy,
-        secure, and well supported. PostgreSQL is my default database. Flutter
-        covers mobile and desktop from one codebase. Go is next, for its speed
-        and concurrency model.
-      </p>
-    </div>
-  </div>
   </div>
 </section>
 
-<section class="section" aria-labelledby="skills-heading">
-  <div class="container">
-  <div class="section-header">
-    <p class="eyebrow">Skills</p>
-    <h2 id="skills-heading">What I work with</h2>
-  </div>
-  <div class="card-grid card-grid-2">
-    {% for group, items in site.skills.items %}
-    <div class="card">
-      <h3>{{ group }}</h3>
-      <ul class="tag-list">
-        {% for item in items %}<li class="tag">{{ item }}</li>{% endfor %}
+<section class="landing-section landing-now" aria-labelledby="now-heading">
+  <div class="container landing-now-grid">
+    <div class="landing-now-main">
+      <span class="landing-index" aria-hidden="true">05</span>
+      <p class="eyebrow">Right now</p>
+      <h2 id="now-heading">Currently in the loop.</h2>
+      <ul class="landing-now-list">
+        {% for item in site.now_items %}
+        <li><span aria-hidden="true"></span>{{ item }}</li>
+        {% endfor %}
       </ul>
     </div>
-    {% endfor %}
-  </div>
-  </div>
-</section>
 
-<section class="section" aria-labelledby="education-heading">
-  <div class="container">
-  <div class="section-header">
-    <p class="eyebrow">Education</p>
-    <h2 id="education-heading">Education</h2>
-  </div>
-  <div class="timeline">
-    {% for edu in site.education %}
-    <div class="timeline-item">
-      <span class="timeline-period">{{ edu.period }}</span>
-      <div class="timeline-body">
+    <div class="landing-education">
+      <p class="eyebrow">Education</p>
+      {% for edu in site.education %}
+      <div class="landing-education-item">
+        <span>{{ edu.period }}</span>
         <h3>{{ edu.credential }}</h3>
-        <p class="muted">{{ edu.institution }} &middot; {{ edu.status }}</p>
+        <p>{{ edu.institution }}{% if edu.status %} &middot; {{ edu.status }}{% endif %}</p>
       </div>
+      {% empty %}
+      <p class="muted">Add education entries in the owner dashboard.</p>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-  <div class="cta-panel">
-    <div>
-      <p class="eyebrow">Contact</p>
-      <h2>Have a backend problem worth solving?</h2>
-      <p>Email is the fastest way to reach me. I also answer on WhatsApp and LinkedIn.</p>
+<section class="landing-cta">
+  <div class="container landing-cta-inner">
+    <p class="eyebrow">Contact</p>
+    <h2>Let's build something useful.</h2>
+    <p>Have a project or idea in mind? Send a message and I'll get back to you.</p>
+    <div class="landing-cta-actions">
+      {% if site.email %}<a class="btn btn-primary" href="mailto:{{ site.email }}">Send an email</a>{% endif %}
+      {% for link in site.social_links %}
+        {% if link.platform == "whatsapp" or link.platform == "linkedin" %}
+        <a class="btn" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+        {% endif %}
+      {% endfor %}
     </div>
-    <div class="cta-actions">
-      {% if site.socials.email %}<a class="btn btn-primary" href="mailto:{{ site.socials.email }}">Send an email</a>{% endif %}
-      {% if site.socials.whatsapp %}<a class="btn" href="{{ site.socials.whatsapp }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>{% endif %}
-      {% if site.socials.linkedin %}<a class="btn btn-ghost" href="{{ site.socials.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}
-    </div>
-  </div>
+    {% if site.email %}<a class="landing-cta-email" href="mailto:{{ site.email }}">{{ site.email }}</a>{% endif %}
   </div>
 </section>
 {% endblock %}

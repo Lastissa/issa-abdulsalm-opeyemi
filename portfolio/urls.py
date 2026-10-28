@@ -35,6 +35,11 @@ urlpatterns = [
         name="custom_admin_visitor_delete",
     ),
     path("custom-admin/posts/", views.custom_admin_posts, name="custom_admin_posts"),
+    path(
+        "custom-admin/posts/<int:pk>/delete/",
+        views.custom_admin_post_delete,
+        name="custom_admin_post_delete",
+    ),
     path("custom-admin/cv/", views.custom_admin_cv, name="custom_admin_cv"),
     path(
         "custom-admin/cv/<int:pk>/activate/",
