@@ -54,7 +54,7 @@
       <p class="hero-modern-role">{{ site.role_title|default:"Software Developer" }}</p>
       <p class="hero-modern-sub">I help turn ideas into platforms that people actually use.</p>
       <div class="hero-modern-actions">
-        <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">View my work</a>
+        <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">Explore my work</a>
         <a class="btn btn-ghost" href="{% url 'portfolio:cv_download' %}">Download CV</a>
         {% comment %} <a class="btn btn-ghost" href="#academia">My learning</a> {% endcomment %}
       </div>
@@ -75,7 +75,6 @@
       <div>
         {% comment %} <p class="section-kicker">Work</p> {% endcomment %}
         <h2 class="section-title" id="work-heading">My work</h2>
-        <p class="section-lead">Things I've built / worked on.</p>
       </div>
       <a class="btn btn-ghost" href="{% url 'portfolio:projects' %}">See all</a>
     </header>
@@ -103,9 +102,7 @@
 <section class="tools-section" aria-labelledby="tools-heading">
   <div class="container">
     <header class="section-header">
-      <p class="section-kicker">Tools</p>
-      <h2 class="section-title" id="tools-heading">What I use</h2>
-      <p class="section-lead">Simple tools to get things done.</p>
+      <h2 class="section-title" id="tools-heading">Stack</h2>
     </header>
     <div class="tools-grid">
       {% for group in site.skill_groups %}
@@ -116,7 +113,7 @@
         </ul>
       </article>
       {% empty %}
-      <div class="empty-state"><p>Add tools in the owner area.</p></div>
+      <div class="empty-state"><p>Add tools in the admin.</p></div>
       {% endfor %}
     </div>
   </div>
@@ -125,10 +122,9 @@
 <section class="notes-section" aria-labelledby="notes-heading">
   <div class="container notes-grid">
     <header class="notes-head">
-      <p class="section-kicker">Notes</p>
-      <h2 class="section-title" id="notes-heading">Updates</h2>
-      <p class="section-lead">Short notes on what I'm building and learning.</p>
-      <a class="btn btn-ghost" href="{% url 'portfolio:feed' %}">See all notes</a>
+      <h2 class="section-title" id="notes-heading">My Journal</h2>
+      <p class="section-lead">A peep into how i build and how i think.</p>
+      <a class="btn btn-ghost" href="{% url 'portfolio:feed' %}">See all.</a>
     </header>
     <div class="notes-list">
       {% for post in latest_posts %}
@@ -146,9 +142,7 @@
 <section class="academia-section" id="academia">
   <div class="container">
     <header class="section-header">
-      <p class="section-kicker">Learning</p>
-      <h2 class="section-title">Academia</h2>
-      <p class="section-lead">My education and learning so far.</p>
+      <h2 class="section-title">Academics</h2>
     </header>
     <div class="academia-grid">
       {% for edu in site.education %}
@@ -172,11 +166,25 @@
   <div class="container contact-inner">
     <p class="section-kicker">Contact</p>
     <h2 class="section-title">Let's work together</h2>
-    <p class="section-lead">Have something in mind? Just send a message.</p>
+    <p class="section-lead">Have something in mind? contact me below.</p>
     <div class="contact-actions">
-      {% if site.email %}<a class="btn btn-primary" href="mailto:{{ site.email }}">Email me</a>{% endif %}
+      {% if site.email %}<a class="btn btn-primary" href="mailto:{{ site.email }}">Email</a>{% endif %}
       {% for link in site.social_links %}
-      <a class="btn btn-ghost" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.name }}</a>
+      <a class="btn btn-ghost btn-icon" href="{{ link.url }}" target="_blank" rel="noopener" aria-label="{{ link.label|default:link.platform }}">
+        {% if link.platform == 'github' or link.label|lower|slice:'0:6' == 'github' %}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.58A12 12 0 0 0 12 .5Z"/></svg>
+        {% elif link.platform == 'linkedin' or link.label|lower|slice:'0:8' == 'linkedin' %}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3A2 2 0 0 1 21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.74 1.74-1.74a1.74 1.74 0 0 1 1.74 1.74v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77Z"/></svg>
+        {% elif link.platform == 'x' or link.platform == 'twitter' or 'x' in link.label|lower %}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2Z"/></svg>
+        {% elif link.platform == 'whatsapp' or 'whatsapp' in link.label|lower %}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.75 13.96c.25.13.41.2.46.3.06.11.04.61-.21 1.18-.2.56-1.24 1.1-1.7 1.12-.46.02-.47.36-2.96-.73-2.49-1.09-3.99-3.75-4.11-3.92-.12-.17-.96-1.38-.92-2.61.05-1.22.69-1.8.95-2.04.24-.26.51-.29.68-.26h.47c.15 0 .36-.06.55.45l.69 1.87c.06.13.1.28.01.44l-.27.41-.39.42c-.12.12-.26.25-.12.5.12.26.62 1.09 1.32 1.78.91.88 1.71 1.17 1.95 1.3.24.14.39.12.54-.04l.81-.94c.19-.25.35-.19.58-.11l1.67.88M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10c-1.97 0-3.8-.57-5.35-1.55L2 22l1.55-4.65A9.969 9.969 0 0 1 2 12 10 10 0 0 1 12 2m0 2a8 8 0 0 0-8 8c0 1.72.54 3.31 1.46 4.61L4.5 19.5l2.89-.96A7.95 7.95 0 0 0 12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8Z"/></svg>
+        {% elif 'mail' in link.label|lower or link.platform == 'email' %}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
+        {% else %}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8v2m9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 0-10Z"/></svg>
+        {% endif %}
+      </a>
       {% endfor %}
     </div>
   </div>

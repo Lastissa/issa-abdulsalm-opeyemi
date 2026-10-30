@@ -40,7 +40,6 @@
   <header class="project-detail-header">
     <div class="project-detail-meta">
       <span class="status status-{{ project.status_class }}">{{ project.status_label }}</span>
-      {% if project.embeddable %}<span class="badge">Live preview</span>{% endif %}
       {% if project.year %}<span class="badge">{{ project.year }}</span>{% endif %}
     </div>
     <h1>{{ project.name }}</h1>
@@ -112,16 +111,14 @@
       {% endif %}
 
       <div class="prose">
-        <h2>What it is</h2>
+        <h2>About</h2>
         <p>{{ project.description }}</p>
-        <h2>What I focused on</h2>
-        <p>{{ project.focus|default:project.description }}</p>
       </div>
     </div>
 
     <aside class="project-detail-aside" aria-label="Project details">
       <div class="detail-card">
-        <h2>At a glance</h2>
+        <h2>Overview</h2>
         <ul class="detail-list">
           <li><span>Status</span><strong>{{ project.status_label }}</strong></li>
           <li><span>Type</span><strong>{{ project.project_type|default:"Web application" }}</strong></li>

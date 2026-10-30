@@ -7,12 +7,11 @@
   (function () {
     try {
       var stored = localStorage.getItem("theme");
-      var fallback = "{{ site.default_theme|default:'system' }}";
-      var preferred = fallback === "light" || fallback === "dark"
-        ? fallback
-        : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      var theme = stored === "light" || stored === "dark" ? stored : preferred;
-      document.documentElement.setAttribute("data-theme", theme);
+      if (stored === "light" || stored === "dark") {
+        document.documentElement.setAttribute("data-theme", stored);
+      } else {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
     } catch (error) {
       document.documentElement.setAttribute("data-theme", "light");
     }
@@ -212,52 +211,46 @@ home-portrait      </span>
 
 {% block site_footer %}
 <footer class="site-footer">
-  <div class="container footer-grid">
+  <div class="container footer-top">
     <div class="footer-brand">
       <a class="brand" href="{% url 'portfolio:home' %}">
-        <span class="brand-mark" aria-hidden="true">{{ site.initials }}</span>
         <span class="brand-copy">
           <strong>{{ site.short_name }}</strong>
-          <small>{{ site.location }}</small>
         </span>
       </a>
-      <p>{{ site.tagline }}</p>
-      <p class="footer-note">{{ site.footer_note }}</p>
+      <p>{{ site.role_title }}</p>
     </div>
-
-    <div class="footer-col">
-      <h2>Explore</h2>
-      <ul>
-        <li><a href="{% url 'portfolio:home' %}">Home</a></li>
-        <li><a href="{% url 'portfolio:projects' %}">Projects</a></li>
-        <li><a href="{% url 'portfolio:feed' %}">Feed</a></li>
-        <li><a href="{% url 'portfolio:cv' %}">CV</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h2>Elsewhere</h2>
-      <ul>
-        {% for link in site.social_links %}
-        <li><a href="{{ link.url }}"{% if link.platform != 'email' %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <div class="footer-nav-group">
+        <h2>Links</h2>
+        <ul>
+          <li><a href="{% url 'portfolio:home' %}">Home</a></li>
+          <li><a href="{% url 'portfolio:projects' %}">Projects</a></li>
+          <li><a href="{% url 'portfolio:cv' %}">CV</a></li>
+          <li><a href="{% url 'portfolio:feed' %}">Notes</a></li>
+        </ul>
+      </div>
+      <div class="footer-nav-group">
+        <h2>Connect</h2>
+        <ul>
+          {% if site.email %}<li><a href="mailto:{{ site.email }}">Email</a></li>{% endif %}
+          {% for link in site.social_links %}
+          <li><a href="{{ link.url }}" {% if link.platform != 'email' %}target="_blank" rel="noopener"{% endif %}>{{ link.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </nav>
   </div>
-
   <div class="container footer-bottom">
-    <p>&copy; {% now "Y" %} {{ site.full_name }}.</p>
+    <p>&copy; {% now "Y" %} {{ site.full_name }}</p>
     <div class="footer-bottom-links">
-      <a href="{% url 'portfolio:feed_rss' %}">RSS</a>
       {% if request.user.is_staff %}
-        <form method="post" action="{% url 'portfolio:logout' %}"
-              x-data="asyncForm({ redirect: '{% url 'portfolio:home' %}' })"
-              @submit.prevent="submit($event)">
+        <form method="post" action="{% url 'portfolio:logout' %}">
           {% csrf_token %}
           <button class="link-button" type="submit">Sign out</button>
         </form>
       {% else %}
-        <a href="{% url 'portfolio:login' %}">Owner login</a>
+        <a href="{% url 'portfolio:login' %}">Sign in</a>
       {% endif %}
     </div>
   </div>

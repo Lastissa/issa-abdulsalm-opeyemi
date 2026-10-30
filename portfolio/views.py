@@ -48,12 +48,12 @@ from .models import CVVersion, FeedPost, PageView, Project, Visitor
 
 CV_STATIC_DIR = Path(settings.BASE_DIR) / "portfolio" / "static" / "portfolio" / "files"
 CV_FALLBACK_FILENAME = "issa-abdulsalam-opeyemi-cv.pdf"
-LOGIN_ATTEMPT_LIMIT = 6
+LOGIN_ATTEMPT_LIMIT = 10
 LOGIN_ATTEMPT_WINDOW = 60 * 10
 
 
 def staff_required(view):
-    """Owner-only view that answers JSON and HTMX callers correctly."""
+    """private view that answers JSON and HTMX callers correctly."""
 
     @wraps(view)
     def wrapper(request, *args, **kwargs):
@@ -477,7 +477,7 @@ def login_view(request):
                 return redirect(destination)
         else:
             _record_login_attempt(request)
-            detail = "Those credentials did not work."
+            detail = "Invalid Credentials"
             if wants_json(request):
                 return api_response("error", detail, http_status=400)
             messages.error(request, detail)
@@ -504,7 +504,7 @@ def logout_view(request):
 
 
 # ---------------------------------------------------------------------------
-# Owner dashboard
+# My dashboard
 # ---------------------------------------------------------------------------
 
 

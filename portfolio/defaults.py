@@ -169,8 +169,8 @@ SKILL_GROUPS = [
         "name": "Currently exploring",
         "order": 4,
         "skills": [
-            "Go for concurrency and compiled backend work",
-            "Redis and caching strategy",
+            "React - better code management",
+            "Go - backend for speed and concurency",
         ],
     },
 ]
@@ -190,7 +190,7 @@ PRINCIPLES = [
         "title": "Research before building",
         "body": (
             "A product without findings is a product waiting to fail. I start by "
-            "understanding the data, the constraints, and the failure cases, then "
+            "understanding the data, the limitations and the failure cases, then "
             "choose the tool that fits the job."
         ),
         "order": 1,
