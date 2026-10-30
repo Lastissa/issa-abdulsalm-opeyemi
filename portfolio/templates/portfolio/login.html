@@ -1,109 +1,42 @@
 {% extends "base/base_template.html" %}
 
-{% block meta_title %}Owner login | {{ site.full_name }}{% endblock %}
-{% block meta_description %}{{ page.meta_description }}{% endblock %}
+{% block meta_title %}Sign in | {{ site.full_name }}{% endblock %}
+{% block meta_description %}Sign in to manage {{ site.full_name }}'s portfolio.{% endblock %}
 {% block robots %}noindex, nofollow{% endblock %}
-{% block canonical_url %}{{ site.domain }}{% url 'portfolio:login' %}{% endblock %}
 {% block body_class %}auth-body{% endblock %}
 {% block site_header %}{% endblock %}
 {% block site_footer %}{% endblock %}
 
 {% block content %}
 <div class="auth-page">
-  <aside class="auth-aside">
-    <div class="auth-aside-inner">
-      <a class="auth-brand" href="{% url 'portfolio:home' %}">
-        <span class="brand-mark" aria-hidden="true">{{ site.initials }}</span>
-        {{ site.full_name }}
-      </a>
-
-      <h1>The owner side of the site.</h1>
-      <p>
-        One place to keep the CV current, publish short build notes, and see
-        what visitors actually read.
-      </p>
-
-      <ul class="auth-points">
-        {% for point in site.login_points %}
-        <li class="auth-point">
-          <span class="auth-point-icon" aria-hidden="true">
-            {% if point.icon == "cv" %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>
-            {% elif point.icon == "analytics" %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>
-            {% else %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>
-            {% endif %}
-          </span>
-          {{ point.text }}
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </aside>
-
-  <div class="auth-main">
+  <div class="auth-card-wrap">
     <div class="auth-card">
-      <div class="auth-mobile-top">
-        <a class="brand" href="{% url 'portfolio:home' %}">
-          <span class="brand-mark" aria-hidden="true">{{ site.initials }}</span>
-          <span class="brand-copy">
-            <strong>{{ site.short_name }}</strong>
-            <small>Owner access</small>
-          </span>
-        </a>
-        <button class="icon-button theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false" data-theme-toggle>
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-        </button>
-      </div>
+      <a class="auth-brand" href="{% url 'portfolio:home' %}">
+        <span class="auth-brand-mark">{{ site.initials }}</span>
+        <span>{{ site.full_name }}</span>
+      </a>
+      <h1>Sign in</h1>
+      <p>Access the owner dashboard to manage content.</p>
 
-      <p class="eyebrow">{{ page.eyebrow }}</p>
-      <h1>{{ page.heading }}</h1>
-      <p>{{ page.intro }}</p>
-
-      <form method="post"
-            class="auth-form"
-            novalidate
-            x-data="loginForm({ next: '{{ next|escapejs }}' })"
-            @submit.prevent="submit($event)">
+      <form method="post" class="auth-form" novalidate>
         {% csrf_token %}
-
-        <div class="form-error" x-show="error" x-cloak x-text="error" role="alert"></div>
-
         {% if form.non_field_errors %}
-        <div class="form-error" role="alert">{{ form.non_field_errors }}</div>
+        <div class="form-error">{{ form.non_field_errors }}</div>
         {% endif %}
-
         <div class="field">
           <label for="{{ form.username.id_for_label }}">Username</label>
           {{ form.username }}
           {% if form.username.errors %}<div class="form-error">{{ form.username.errors }}</div>{% endif %}
         </div>
-
         <div class="field">
           <label for="{{ form.password.id_for_label }}">Password</label>
-          <div class="password-wrap">
-            {{ form.password }}
-            <button class="password-toggle" type="button" data-password-toggle="{{ form.password.id_for_label }}" aria-label="Show password">Show</button>
-          </div>
+          {{ form.password }}
           {% if form.password.errors %}<div class="form-error">{{ form.password.errors }}</div>{% endif %}
         </div>
-
         {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-
-        <button class="btn btn-primary" type="submit" :disabled="loading" :aria-busy="loading">
-          <span class="btn-spinner" x-show="loading" x-cloak aria-hidden="true"></span>
-          <span x-text="loading ? 'Signing in...' : 'Sign in'">Sign in</span>
-        </button>
+        <button class="btn btn-primary btn-full" type="submit">Sign in</button>
       </form>
-
-      <a class="auth-back" href="{% url 'portfolio:home' %}">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-        Back to the public site
-      </a>
-
-      <p class="auth-note">Only staff accounts can sign in here. There is no public registration.</p>
+      <a class="auth-back" href="{% url 'portfolio:home' %}">Back to site</a>
     </div>
   </div>
 </div>

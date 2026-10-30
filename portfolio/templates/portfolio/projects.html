@@ -38,45 +38,48 @@
 {% endblock %}
 
 {% block content %}
-<section class="container page-hero" aria-labelledby="projects-heading">
-  <p class="eyebrow">{{ page.eyebrow }}</p>
-  <h1 id="projects-heading">{{ page.heading }}</h1>
-  <p class="lead">{{ page.intro }}</p>
+<section class="page-intro">
+  <div class="container">
+    <p class="page-kicker">Projects</p>
+    <h1 class="page-title">My work</h1>
+    <p class="page-lead">Things I've built to solve real problems.</p>
+  </div>
 </section>
 
-<section class="section-tight" aria-label="Project list">
+<section class="projects-section">
   <div class="container">
-  <div class="projects-grid">
-    {% for project in projects %}
-    <article class="project-card">
-      <div class="project-card-head">
-        <h2>{{ project.name }}</h2>
-        <span class="status status-{{ project.status_class }}">{{ project.status_label }}</span>
-      </div>
-      <p>{{ project.summary }}</p>
-      <ul class="tag-list">
-        {% for tech in project.stack|slice:":5" %}<li class="tag">{{ tech }}</li>{% endfor %}
-        {% if project.stack|length > 5 %}<li class="tag">+{{ project.stack|length|add:"-5" }}</li>{% endif %}
-      </ul>
-      <div class="project-card-footer">
-        <div class="project-card-links">
-          <a class="text-link" href="{{ project.get_absolute_url }}">Case study &rarr;</a>
+    <div class="projects-grid">
+      {% for project in projects %}
+      <article class="project-card project-card-tilt" data-tilt>
+        <div class="project-card-body">
+          <div class="project-card-top">
+            <h2><a href="{{ project.get_absolute_url }}">{{ project.name }}</a></h2>
+            {% if project.status_label %}<span class="project-status">{{ project.status_label }}</span>{% endif %}
+          </div>
+          <p>{{ project.summary }}</p>
+          <ul class="project-tags">
+            {% for tech in project.stack|slice:":6" %}
+            <li>{{ tech }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="project-card-foot">
+          <a class="project-link" href="{{ project.get_absolute_url }}">See more</a>
           {% if project.repo_url %}
-          <a class="text-link" href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer">Source &rarr;</a>
+          <a class="project-link" href="{{ project.repo_url }}" target="_blank" rel="noopener">Code</a>
+          {% endif %}
+          {% if project.live_url %}
+          <a class="project-link" href="{{ project.live_url }}" target="_blank" rel="noopener">Try it</a>
           {% endif %}
         </div>
-        {% if project.live_url %}
-        <a class="text-link" href="{{ project.live_url }}" target="_blank" rel="noopener noreferrer">{{ project.live_label|default:"Open live" }} &rarr;</a>
-        {% endif %}
+      </article>
+      {% empty %}
+      <div class="empty-state">
+        <h2>No projects yet</h2>
+        <p>Projects will appear here once added.</p>
       </div>
-    </article>
-    {% empty %}
-    <div class="empty-state">
-      <h2>No projects published yet</h2>
-      <p>Add the first case study in the owner dashboard.</p>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
   </div>
 </section>
 {% endblock %}

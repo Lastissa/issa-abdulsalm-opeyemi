@@ -46,224 +46,139 @@
 {% endblock %}
 
 {% block content %}
-<section class="home-hero" aria-labelledby="hero-heading">
-  <div class="container home-hero-grid">
-    <div class="home-hero-copy">
-
-      <h1 class="home-title" id="hero-heading">
-        <span class="home-title-lead">I'm</span>
-        <span class="home-title-name">{{ site.full_name }}<span class="home-title-dot">.</span></span>
-      </h1>
-
-      <p class="home-subtitle">I build platforms that stay <span>maintainable</span>.</p>
-
-      <p class="home-roles">
-        <span>SaaS</span>
-        <span>Backend System</span>
-        <span>Mobile Application</span>
-        <span>Web Application</span>
-      </p>
-
-      <p class="home-lead">" My purpose is to strategically integrate advanced software engineering directly into the core of institutions across Western Africa."</p>
-
-      <div class="home-actions">
-        <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">Project Catalogue</a>
-        <a class="btn" href="{% url 'portfolio:feed' %}">My Blog</a>
+<section class="hero-modern" aria-labelledby="hero-heading">
+  <div class="container hero-modern-grid">
+    <div class="hero-modern-content">
+      <p class="hero-modern-kicker">Hello, I'm</p>
+      <h1 class="hero-modern-title" id="hero-heading">{{ site.full_name }}</h1>
+      <p class="hero-modern-role">{{ site.role_title|default:"Software Developer" }}</p>
+      <p class="hero-modern-sub">I help turn ideas into platforms that people actually use.</p>
+      <div class="hero-modern-actions">
+        <a class="btn btn-primary" href="{% url 'portfolio:projects' %}">View my work</a>
         <a class="btn btn-ghost" href="{% url 'portfolio:cv_download' %}">Download CV</a>
+        {% comment %} <a class="btn btn-ghost" href="#academia">My learning</a> {% endcomment %}
       </div>
-
-      <dl class="home-stats">
-        <div>
-          <dt>Years building</dt>
-          <dd>{{ site.years_experience }}+</dd>
-        </div>
-        <div>
-          <dt>Projects shipped</dt>
-          <dd>{{ site.projects_delivered }}</dd>
-        </div>
-        <div>
-          <dt>Build notes</dt>
-          <dd>{{ site.post_count }}</dd>
-        </div>
-      </dl>
     </div>
-
-    <div class="home-hero-visual">
-      <span class="home-visual-ghost" aria-hidden="true">{{ site.initials }}</span>
-      <div class="home-portrait-wrap">
-        <span class="home-portrait-orbit" aria-hidden="true"></span>
-        <figure class="home-portrait">
-          <img src="{{ site.avatar }}" alt="Portrait of {{ site.full_name }}" width="480" height="480" loading="eager">
-        </figure>
-      </div>
-      <div class="home-hero-card">
-        <span class="home-card-label">Stack</span>
-        <strong>Django, DRF, PostgreSQL, Flutter, Go, Html, CSS, JS</strong>
-      </div>
-      <p class="home-hero-note">Available for backend work</p>
+    <div class="hero-modern-visual">
+      <figure class="hero-modern-figure">
+        <img src="{{ site.avatar }}" alt="Portrait of {{ site.full_name }}" width="520" height="520" loading="eager">
+      </figure>
     </div>
   </div>
 </section>
 
 
 
-<section class="landing-section landing-work" aria-labelledby="work-heading">
+<section class="work-section" aria-labelledby="work-heading">
   <div class="container">
-    <header class="landing-section-head landing-section-head-inline">
+    <header class="section-header section-header-row">
       <div>
-        <p class="eyebrow">Selected work</p>
-        <h2 id="work-heading">Selected work</h2>
+        {% comment %} <p class="section-kicker">Work</p> {% endcomment %}
+        <h2 class="section-title" id="work-heading">My work</h2>
+        <p class="section-lead">Things I've built / worked on.</p>
       </div>
-      <a class="landing-section-link" href="{% url 'portfolio:projects' %}">All projects <span aria-hidden="true">&rarr;</span></a>
+      <a class="btn btn-ghost" href="{% url 'portfolio:projects' %}">See all</a>
     </header>
-
-    <ol class="landing-work-list">
+    <div class="work-grid">
       {% for project in featured_projects %}
-      <li class="landing-work-item">
-        <a href="{{ project.get_absolute_url }}">
-          <span class="landing-work-num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
-          <span class="landing-work-main">
-            <span class="landing-work-title">{{ project.name }}</span>
-            <span class="landing-work-summary">{{ project.summary }}</span>
-            <span class="landing-work-stack">
-              {% for tech in project.stack|slice:":4" %}{{ tech }}{% if not forloop.last %}<i aria-hidden="true">&middot;</i>{% endif %}{% endfor %}
-            </span>
-          </span>
-          <span class="landing-work-side">
-            <span class="status status-{{ project.status_class }}">{{ project.status_label }}</span>
-            <span class="landing-work-arrow" aria-hidden="true">&#8599;</span>
-          </span>
+      <article class="work-card">
+        <a class="work-card-link" href="{{ project.get_absolute_url }}">
+          <div class="work-card-top">
+            <h3>{{ project.name }}</h3>
+            {% if project.status_label %}<span>{{ project.status_label }}</span>{% endif %}
+          </div>
+          <p>{{ project.summary }}</p>
+          <div class="work-card-tags">
+            {% for tech in project.stack|slice:":4" %}<span>{{ tech }}</span>{% endfor %}
+          </div>
         </a>
-      </li>
+      </article>
       {% empty %}
-      <li class="landing-work-empty">
-        <p>No case studies are published yet. Add the first project in the owner dashboard.</p>
-      </li>
+      <div class="empty-state"><p>No work yet.</p></div>
       {% endfor %}
-    </ol>
+    </div>
   </div>
 </section>
 
-<section class="landing-section landing-stack" aria-labelledby="stack-heading">
+<section class="tools-section" aria-labelledby="tools-heading">
   <div class="container">
-    <header class="landing-section-head">
-      <span class="landing-index" aria-hidden="true">02</span>
-      <div>
-        <p class="eyebrow">The toolkit</p>
-        <h2 id="stack-heading">What I reach for.</h2>
-      </div>
-      <p class="landing-section-note">Django, DRF, PostgreSQL, Flutter, Go</p>
+    <header class="section-header">
+      <p class="section-kicker">Tools</p>
+      <h2 class="section-title" id="tools-heading">What I use</h2>
+      <p class="section-lead">Simple tools to get things done.</p>
     </header>
-
-    <div class="landing-stack-grid">
+    <div class="tools-grid">
       {% for group in site.skill_groups %}
-      <article class="landing-stack-group">
-        <span class="landing-stack-num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+      <article class="tools-card">
         <h3>{{ group.name }}</h3>
         <ul>
           {% for item in group.items %}<li>{{ item }}</li>{% endfor %}
         </ul>
       </article>
       {% empty %}
-      <p class="muted">Add skill groups in the owner dashboard.</p>
+      <div class="empty-state"><p>Add tools in the owner area.</p></div>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<section class="landing-section landing-log" aria-labelledby="log-heading">
-  <div class="container landing-log-grid">
-    <header class="landing-log-head">
-      <span class="landing-index" aria-hidden="true">03</span>
-      <p class="eyebrow">Build log</p>
-      <h2 id="log-heading">Notes from the work.</h2>
-      <p>Short updates on what I'm building, learning, and shipping.</p>
-      <a class="btn" href="{% url 'portfolio:feed' %}">Open the feed</a>
+<section class="notes-section" aria-labelledby="notes-heading">
+  <div class="container notes-grid">
+    <header class="notes-head">
+      <p class="section-kicker">Notes</p>
+      <h2 class="section-title" id="notes-heading">Updates</h2>
+      <p class="section-lead">Short notes on what I'm building and learning.</p>
+      <a class="btn btn-ghost" href="{% url 'portfolio:feed' %}">See all notes</a>
     </header>
-
-    <ol class="landing-log-list">
+    <div class="notes-list">
       {% for post in latest_posts %}
-      <li>
-        <a href="{{ post.get_absolute_url }}">
-          <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"d M Y" }}</time>
-          <span>{{ post.content|truncatewords:26 }}</span>
-          <i aria-hidden="true">&rarr;</i>
-        </a>
-      </li>
-      {% empty %}
-      <li class="landing-log-empty">
-        <p>No notes published yet. The first one is coming.</p>
-      </li>
-      {% endfor %}
-    </ol>
-  </div>
-</section>
-
-<section class="landing-section landing-principles" aria-labelledby="principles-heading">
-  <div class="container">
-    <header class="landing-section-head">
-      <span class="landing-index" aria-hidden="true">04</span>
-      <div>
-        <p class="eyebrow">Approach</p>
-        <h2 id="principles-heading">Pragmatic, clear, and testable.</h2>
-      </div>
-      <p class="landing-section-note">I keep systems simple, document decisions, and ship in small steps. Clarity beats cleverness when it comes to long-term maintenance.</p>
-    </header>
-
-    <div class="landing-principles-grid">
-      {% for principle in site.principles %}
-      <article class="landing-principle">
-        <span class="landing-principle-num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
-        <h3>{{ principle.title }}</h3>
-        <p>{{ principle.body }}</p>
+      <article class="notes-item">
+        <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"d M Y" }}</time>
+        <p>{{ post.content|truncatewords:30 }}</p>
       </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<section class="landing-section landing-now" aria-labelledby="now-heading">
-  <div class="container landing-now-grid">
-    <div class="landing-now-main">
-      <span class="landing-index" aria-hidden="true">05</span>
-      <p class="eyebrow">Right now</p>
-      <h2 id="now-heading">Currently in the loop.</h2>
-      <ul class="landing-now-list">
-        {% for item in site.now_items %}
-        <li><span aria-hidden="true"></span>{{ item }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="landing-education">
-      <p class="eyebrow">Education</p>
-      {% for edu in site.education %}
-      <div class="landing-education-item">
-        <span>{{ edu.period }}</span>
-        <h3>{{ edu.credential }}</h3>
-        <p>{{ edu.institution }}{% if edu.status %} &middot; {{ edu.status }}{% endif %}</p>
-      </div>
       {% empty %}
-      <p class="muted">Add education entries in the owner dashboard.</p>
+      <div class="empty-state"><p>No notes yet.</p></div>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<section class="landing-cta">
-  <div class="container landing-cta-inner">
-    <p class="eyebrow">Contact</p>
-    <h2>Let's build something useful.</h2>
-    <p>Have a project or idea in mind? Send a message and I'll get back to you.</p>
-    <div class="landing-cta-actions">
-      {% if site.email %}<a class="btn btn-primary" href="mailto:{{ site.email }}">Send an email</a>{% endif %}
-      {% for link in site.social_links %}
-        {% if link.platform == "whatsapp" or link.platform == "linkedin" %}
-        <a class="btn" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
-        {% endif %}
+<section class="academia-section" id="academia">
+  <div class="container">
+    <header class="section-header">
+      <p class="section-kicker">Learning</p>
+      <h2 class="section-title">Academia</h2>
+      <p class="section-lead">My education and learning so far.</p>
+    </header>
+    <div class="academia-grid">
+      {% for edu in site.education %}
+      <article class="academia-card" data-tilt>
+        <div class="academia-card-top">
+          <h3>{{ edu.credential }}</h3>
+          {% if edu.period %}<span>{{ edu.period }}</span>{% endif %}
+        </div>
+        <p>{{ edu.institution }}{% if edu.status %} &middot; {{ edu.status }}{% endif %}</p>
+      </article>
+      {% empty %}
+      <div class="empty-state">
+        <p>No learning entries yet.</p>
+      </div>
       {% endfor %}
     </div>
-    {% if site.email %}<a class="landing-cta-email" href="mailto:{{ site.email }}">{{ site.email }}</a>{% endif %}
+  </div>
+</section>
+
+<section class="contact-section">
+  <div class="container contact-inner">
+    <p class="section-kicker">Contact</p>
+    <h2 class="section-title">Let's work together</h2>
+    <p class="section-lead">Have something in mind? Just send a message.</p>
+    <div class="contact-actions">
+      {% if site.email %}<a class="btn btn-primary" href="mailto:{{ site.email }}">Email me</a>{% endif %}
+      {% for link in site.social_links %}
+      <a class="btn btn-ghost" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.name }}</a>
+      {% endfor %}
+    </div>
   </div>
 </section>
 {% endblock %}

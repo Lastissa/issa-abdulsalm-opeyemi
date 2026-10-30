@@ -271,31 +271,49 @@ home-portrait      </span>
 (function () {
   var curtain = document.getElementById("page-transition");
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!curtain || reduced) return;
-  document.documentElement.classList.add("page-enter");
-  window.setTimeout(function () {
-    document.documentElement.classList.remove("page-enter");
-  }, 520);
-  document.addEventListener("click", function (event) {
-    var link = event.target.closest("a[href]");
-    if (!link) return;
-    if (link.target && link.target !== "_self") return;
-    if (link.hasAttribute("data-no-transition")) return;
-    if (link.href.indexOf("mailto:") === 0 || link.href.indexOf("tel:") === 0) return;
-    if (link.href.indexOf("#") === 0) return;
-    try {
-      var url = new URL(link.href, window.location.origin);
-      if (url.origin !== window.location.origin) return;
-      if (url.pathname === window.location.pathname && url.hash) return;
-      event.preventDefault();
-      document.documentElement.classList.add("page-leave");
-      window.setTimeout(function () {
-        window.location.href = link.href;
-      }, 420);
-    } catch (error) {
-      return;
-    }
-  }, true);
+  if (curtain && !reduced) {
+    document.documentElement.classList.add("page-enter");
+    window.setTimeout(function () {
+      document.documentElement.classList.remove("page-enter");
+    }, 520);
+    document.addEventListener("click", function (event) {
+      var link = event.target.closest("a[href]");
+      if (!link) return;
+      if (link.target && link.target !== "_self") return;
+      if (link.hasAttribute("data-no-transition")) return;
+      if (link.href.indexOf("mailto:") === 0 || link.href.indexOf("tel:") === 0) return;
+      if (link.href.indexOf("#") === 0) return;
+      try {
+        var url = new URL(link.href, window.location.origin);
+        if (url.origin !== window.location.origin) return;
+        if (url.pathname === window.location.pathname && url.hash) return;
+        event.preventDefault();
+        document.documentElement.classList.add("page-leave");
+        window.setTimeout(function () {
+          window.location.href = link.href;
+        }, 420);
+      } catch (error) {
+        return;
+      }
+    }, true);
+  }
+
+  var tilts = document.querySelectorAll('[data-tilt]');
+  tilts.forEach(function (el) {
+    el.addEventListener('mousemove', function (e) {
+      var rect = el.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      var cx = rect.width / 2;
+      var cy = rect.height / 2;
+      var dx = (x - cx) / cx;
+      var dy = (y - cy) / cy;
+      el.style.transform = 'perspective(1100px) rotateX(' + (-dy * 4) + 'deg) rotateY(' + (dx * 4) + 'deg) translateZ(10px)';
+    });
+    el.addEventListener('mouseleave', function () {
+      el.style.transform = 'perspective(1100px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+    });
+  });
 })();
 </script>
 {% block extra_body %}{% endblock %}

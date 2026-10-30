@@ -13,7 +13,7 @@ SITE = {
     "city": "City",
     "country_code": "NG",
     "tagline": (
-        "What do i do"
+        "What do i do."
     ),
     "availability": "Avaability",
     "email": "lastissa11@gmail.com",
@@ -54,7 +54,7 @@ SITE = {
         "LinkedIn."
     ),
     "footer_note": (
-        "Django, DRF, PostgreSQL, and a bias for maintainable systems."
+        "Python, PostgreSQL,UI and a bias for maintainable systems."
     ),
     "avatar_url": "",
     "cv_display_name": "Issa Abdulsalam Opeyemi - CV.pdf",
