@@ -77,12 +77,33 @@
                 headers: {'X-Requested-With': 'XMLHttpRequest'},
                 credentials: 'same-origin'
               });
-              var data = await res.json().catch(function(){ return {status:'error', detail:'Something went wrong'}; });
-              if(data.status === 'ok'){
-                window.location.assign(data.redirect || '/custom-admin/');
+              if(res.status >= 200 && res.status < 300){
+                var data = await res.json().catch(function(){ return null; });
+                if(data && data.status === 'ok'){
+                  window.location.assign(data.redirect || '/custom-admin/');
+                  return;
+                }
+                setErr(nf, (data && data.detail) || 'Success response missing redirect');
                 return;
               }
-              setErr(nf, data.detail || 'Login failed');
+              if(res.status === 403){
+                setErr(nf, 'access denied');
+                return;
+              }
+              if(res.status === 429){
+                setErr(nf, 'Too many attempts');
+                return;
+              }
+              if(res.status >= 400 && res.status < 500){
+                var data4 = await res.json().catch(function(){ return null; });
+                setErr(nf, (data4 && data4.detail) || ('Request failed (' + res.status + ')'));
+                return;
+              }
+              if(res.status >= 500){
+                setErr(nf, 'Server error (' + res.status + ')');
+                return;
+              }
+              setErr(nf, 'Unexpected response (' + res.status + ')');
             } catch(err) {
               setErr(nf, 'Network error');
             } finally {

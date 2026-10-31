@@ -315,13 +315,12 @@ PROJECTS = [
             "PostgreSQL",
         ],
         "repo_url": "https://github.com/Lastissa/STREAK-and-DISCIPLINE",
-        "live_url": "https://discipline-hu97.onrender.com/",
+        "live_url": "https://dstrict.vercel.app/",
         "live_label": "Live demo",
         "embeddable": True,
         "featured": True,
         "preview_note": (
-            "The demo runs on a free Render instance, so the first load can take "
-            "a few seconds."
+            "project maintance is not frequent",
         ),
         "order": 2,
     },
