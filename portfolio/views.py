@@ -3,8 +3,7 @@ from django.shortcuts import render
 
 class SitemapView(View):
     def get(self, request):
-        # Logic to generate and return the sitemap XML response
-        item ={}
+        item ={} # hOLD THE CONTENT THE SITEMAP IS SUPPOSED TO DISPLAY
         return render(request, "portfolio/sitemap.xml",{"item": item}, content_type="application/xml")
     
 class Favico(View):

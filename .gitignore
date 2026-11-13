@@ -1,9 +1,3 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-
 # Django
 db.sqlite3
 db.sqlite3-journal
@@ -12,21 +6,9 @@ media/
 .cache/
 *.log
 
-# Local QA / preview artifacts
-.preview*
-preview_*.py
-preview_*.js
-.qa-*
-.chrome-*
-.width-test.html
-
 # Env
 .env
 .venv/
 env/
 
-# Editors / OS
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+
